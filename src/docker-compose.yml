@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  server:
+    build: ./BackEnd
+    expose:
+      - ${BACK_END_PORT}
+    ports:
+      - 9001:${BACK_END_PORT}
+    command: ./server
+
+  client:
+    build: ./FrontEnd
+    expose:
+      - ${FRONT_END_PORT}
+    ports:
+      - 9000:${FRONT_END_PORT}
+    volumes:
+      - ./FrontEnd/wicigga_frontend/src:/app/src
+      - ./FrontEnd/wicigga_frontend/public:/app/public
+    links:
+      - server
+    command: npm run start
