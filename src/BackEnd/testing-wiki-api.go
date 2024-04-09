@@ -131,7 +131,88 @@ func timeTrack(start time.Time, name string) {
 	log.Printf("%s took %s", name, elapsed)
 }
 
-func scrapWeb(url string, end string) {
+func scrapWeb(url string) []string {
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		log.Fatal("Failed to parse the HTML document", err)
+	}
+
+	namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:"}
+
+	urlHTML := doc.Find("#content").Find("a").FilterFunction(func(i int, s *goquery.Selection) bool {
+		link, _ := s.Attr("href")
+
+		a := strings.HasPrefix(link, "/wiki/")
+
+		for _, elmt := range namespace_list {
+			a = a && !strings.Contains(link, elmt)
+		}
+		return a
+	})
+
+	final_ans := urlHTML.Map(func(i int, s *goquery.Selection) string {
+		link, _ := s.Attr("href")
+
+		return "https://en.wikipedia.org" + link
+	})
+
+	return final_ans
+}
+
+func DLS(start string, end string, maxdepth int, visited_dls map[string]bool, saved_path []string) bool {
+	if start == end {
+		for _, elmt := range saved_path {
+			fmt.Println(elmt)
+		}
+		return true
+	}
+
+	if maxdepth <= 0 {
+		return false
+	}
+
+	url_scrap := scrapWeb(start)
+
+	url_list := []string{}
+
+	for _, elmt := range url_scrap {
+		_, err := visited_dls[elmt]
+
+		if !err {
+			visited_dls[elmt] = true
+			url_list = append(url_list, elmt)
+		}
+	}
+
+	for _, elmt := range url_list {
+		saved_path2 := append(saved_path, elmt)
+		if DLS(elmt, end, maxdepth-1, visited_dls, saved_path2) {
+			return true
+		}
+	}
+	return false
+}
+
+func IDS(start string, end string, maxdepth int) bool {
+	defer timeTrack(time.Now(), "IDS")
+
+	for i := 0; i <= maxdepth; i++ {
+		var visited_dls = map[string]bool{}
+		saved_path := []string{}
+		if DLS(start, end, i, visited_dls, saved_path) {
+			return true
+		}
+	}
+	return false
+}
+
+func BFS(url string, end string) {
 	defer timeTrack(time.Now(), "scrapWeb")
 
 	url_queue := []string{}
@@ -142,40 +223,14 @@ func scrapWeb(url string, end string) {
 
 		fmt.Println(current_url)
 
-		resp, err := http.Get(current_url)
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer resp.Body.Close()
+		link_res := scrapWeb(current_url)
 
-		doc, err := goquery.NewDocumentFromReader(resp.Body)
-		if err != nil {
-			log.Fatal("Failed to parse the HTML document", err)
-		}
-
-		namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:"}
-
-		urlHTML := doc.Find("#content").Find("a").FilterFunction(func(i int, s *goquery.Selection) bool {
-			link, _ := s.Attr("href")
-
-			a := strings.HasPrefix(link, "/wiki/")
-
-			for _, elmt := range namespace_list {
-				a = a && !strings.Contains(link, elmt)
-			}
-			return a
-		})
-
-		urlHTML.Each(func(i int, s *goquery.Selection) {
-			link, _ := s.Attr("href")
-
-			res := "https://en.wikipedia.org" + link
-
+		for _, elmt := range link_res {
 			// check if it not exist
-			if !isIn(res, url_queue) {
-				url_queue = append(url_queue, res)
+			if !isIn(elmt, url_queue) {
+				url_queue = append(url_queue, elmt)
 			}
-		})
+		}
 
 		current_url = url_queue[0]
 		url_queue = url_queue[1:]
@@ -195,6 +250,8 @@ func main() {
 	fmt.Println(PrettyPrint(page2))
 
 	// start scraping
-	// max_depth := 3
-	scrapWeb(page1.Url, page2.Url)
+	max_depth := 3
+	// BFS(page1.Url, page2.Url)
+	x := IDS(page1.Url, page2.Url, max_depth)
+	fmt.Println(x)
 }
