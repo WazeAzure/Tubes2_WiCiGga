@@ -58,6 +58,15 @@ func formatParams(params map[string]string) string {
 	return queryString[:len(queryString)-1]
 }
 
+func isIn(s string, arr []string) bool {
+	for _, elmt := range arr {
+		if elmt == s {
+			return true
+		}
+	}
+	return false
+}
+
 /*
 * Fungsi untuk searching dan get recommendation
  */
@@ -123,15 +132,17 @@ func timeTrack(start time.Time, name string) {
 }
 
 func scrapWeb(url string, end string) {
-
 	defer timeTrack(time.Now(), "scrapWeb")
 
 	url_queue := []string{}
-	url_visited := []string{}
 
 	current_url := url
+
 	for current_url != end {
-		resp, err := http.Get(url)
+
+		fmt.Println(current_url)
+
+		resp, err := http.Get(current_url)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -142,7 +153,7 @@ func scrapWeb(url string, end string) {
 			log.Fatal("Failed to parse the HTML document", err)
 		}
 
-		namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_Talk:"}
+		namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:"}
 
 		urlHTML := doc.Find("#content").Find("a").FilterFunction(func(i int, s *goquery.Selection) bool {
 			link, _ := s.Attr("href")
@@ -155,29 +166,20 @@ func scrapWeb(url string, end string) {
 			return a
 		})
 
-		temp := urlHTML.Map(func(i int, s *goquery.Selection) string {
+		urlHTML.Each(func(i int, s *goquery.Selection) {
 			link, _ := s.Attr("href")
 
-			return "https://en.wikipedia.org" + link
-		})
+			res := "https://en.wikipedia.org" + link
 
-		// visited url
-		url_visited = append(url_visited, current_url)
-
-		for _, elmt := range temp {
-
-			for i := 0; i < len(url_visited); i++ {
-				if elmt != url_visited[i] {
-					url_queue = append(url_queue, elmt)
-					break
-				}
+			// check if it not exist
+			if !isIn(res, url_queue) {
+				url_queue = append(url_queue, res)
 			}
-		}
+		})
 
 		current_url = url_queue[0]
 		url_queue = url_queue[1:]
 
-		fmt.Println(current_url)
 	}
 
 	fmt.Println("=======[ END ]=======")
