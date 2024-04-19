@@ -7,9 +7,21 @@ import { useState, useEffect } from 'react';
 function App() {
   const [data, setData] = useState();
   // testing using state
-  
+
   useEffect(() => {
-    fetch('http://server:')
+    fetch('http://localhost:4000/path', {
+      mode: 'cors',
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        setData(data);
+      });
   }, [])
 
 
@@ -26,7 +38,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Learn React 2
         </a>
       </header>
     </div>
