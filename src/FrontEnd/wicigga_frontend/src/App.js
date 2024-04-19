@@ -9,12 +9,7 @@ function App() {
   // testing using state
 
   useEffect(() => {
-    fetch('http://localhost:4000/path', {
-      mode: 'cors',
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      }
-    })
+    fetch('http://localhost:4000/path')
       .then((res) => {
         return res.json();
       })

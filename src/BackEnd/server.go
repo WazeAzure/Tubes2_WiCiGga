@@ -3,8 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
+
+type ResponseJSON struct {
+	Path   []string `json:"path"`
+	Status bool     `json:"status"`
+}
 
 /*
 +------------------------------------------+
@@ -14,6 +20,8 @@ import (
 
 func main() {
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	// Define API endpoints
 	router.GET("/path", getPath)
@@ -30,7 +38,10 @@ func main() {
 
 // Handler for GET /items
 func getPath(c *gin.Context) {
-	c.JSON(http.StatusOK, "this is homepage")
+	var resp ResponseJSON
+	resp.Path = []string{"1", "2", "3"}
+	resp.Status = true
+	c.JSON(http.StatusOK, resp)
 }
 
 // Handler for POST /items/add
