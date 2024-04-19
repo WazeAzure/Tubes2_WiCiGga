@@ -1,7 +1,18 @@
 import logo from './logo.svg';
 import './App.css';
 
+import { useState, useEffect } from 'react';
+
+
 function App() {
+  const [data, setData] = useState();
+  // testing using state
+  
+  useEffect(() => {
+    fetch('http://server:')
+  }, [])
+
+
   return (
     <div className="App">
       <header className="App-header">
