@@ -39,7 +39,7 @@ func main() {
 // Handler for GET /items
 func getPath(c *gin.Context) {
 	var resp ResponseJSON
-	resp.Path = []string{"1", "2", "3"}
+	resp.Path = []string{"Nigga-chan", "Nigga-balls", "Ching-chong"}
 	resp.Status = true
 	c.JSON(http.StatusOK, resp)
 }

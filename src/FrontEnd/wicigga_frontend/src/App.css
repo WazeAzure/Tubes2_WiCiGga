@@ -1,38 +1,124 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.Head {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.title {
+  font-size: 100px;
+  user-select: none;
+  color: black;
+}
+
+.search-section {
+  display: flex;
+  flex-direction: row;
+  column-gap: 10vh;
+}
+
+.search-left {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1vh;
+}
+
+.search-right {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1vh;
+}
+
+.search-bar-container {
+  border: 3px solid;
+  height: 50px;
+  width: 400px;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-offset {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown {
+  border: 2.5px solid;
+  height: fit-content;
+  width: 99%;
+  position: absolute;
+  list-style: none;
+  background-color: white;
+}
+
+.search-result {
+  padding: 10px 10px;
+  border-bottom: 2px solid;
+  font-size: 20px;
+}
+
+.search-result:last-child {
+  border-bottom: none;
+}
+
+.search-bar {
+  width: 100%;
+  height: 80%;
+  border-width: 2.5px;
+  border: none;
+  outline: none;
+  padding: 3px 10px;
+  font-size: 25px;
+  font-weight: 50;
+}
+
+.box-1 {
+  height: 400px;
+  width: 400px;
+  display: flex;
+  flex-direction: row;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  column-gap: 3vh;
+}
+
+.button-mode {
+  display: flex;
+  justify-content: center;
+  font-size: 27px;
+  font-weight: 900;
+  align-items: center;
+  border: 3px solid;
+  border-radius: 8px;
+  height: 65px;
+  width: 100px;
+  background-color: #0AF;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.3s;
+}
+
+.button-mode:hover {
   color: white;
+  border-color: black;
 }
 
-.App-link {
-  color: #61dafb;
+.button-search {
+  display: flex;
+  border: 3px solid;
+  border-radius: 8px;
+  height: 65px;
+  width: 200px;
+  background-color: #0AF;
+  cursor: pointer;
+  font-size: 30px;
+  font-weight: 900;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  transition: 0.3s;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.button-search:hover {
+  color: white;
+  border-color: black;
 }
