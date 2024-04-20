@@ -54,6 +54,11 @@
   padding: 10px 10px;
   border-bottom: 2px solid;
   font-size: 20px;
+  cursor: pointer;
+}
+
+.search-result:hover {
+  background-color: #ddd;
 }
 
 .search-result:last-child {
