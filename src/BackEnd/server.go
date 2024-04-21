@@ -68,7 +68,7 @@ func getPath(c *gin.Context) {
 
 	fmt.Print(requestData.Method)
 	if requestData.Method == "BFS" {
-		resp = BFS(page1.Url, page2.Url)
+		resp = *BFS(page1.Url, page2.Url)
 	} else if requestData.Method == "IDS" {
 		fmt.Print("OIT INI DARI IDS")
 		resp = *IDS(page1.Url, page2.Url)

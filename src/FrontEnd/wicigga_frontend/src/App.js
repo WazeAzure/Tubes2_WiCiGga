@@ -45,7 +45,7 @@ function App() {
   //Fetch data for autocomplete from wikipedia's API
   useEffect(() => {
     if (value1 !== "") {
-      fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + encodeURIComponent(value1))
+      fetch("https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&list=search&srsearch=" + encodeURIComponent(value1))
         .then((res) => {
           return res.json();
         }).then((jsonDat) => {
@@ -60,7 +60,7 @@ function App() {
 
   useEffect(() => {
     if (value2 !== "") {
-      fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + encodeURIComponent(value2))
+      fetch("https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&list=search&srsearch=" + encodeURIComponent(value2))
         .then((res) => {
           return res.json();
         }).then((jsonDat) => {

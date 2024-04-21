@@ -244,7 +244,7 @@ func IDS(start string, end string) *ResponseAPI {
 	return &resp
 }
 
-func BFS(url string, end string) ResponseAPI {
+func BFS(url string, end string) *ResponseAPI {
 	var resp ResponseAPI
 
 	defer timeTrack(time.Now(), "scrapWeb", &resp.Time)
@@ -282,7 +282,7 @@ func BFS(url string, end string) ResponseAPI {
 	fmt.Println("=======[ END ]=======")
 	fmt.Println(current_url)
 
-	return resp
+	return &resp
 }
 
 // func main() {
