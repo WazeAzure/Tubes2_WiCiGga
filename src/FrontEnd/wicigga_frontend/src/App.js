@@ -15,6 +15,21 @@ function App() {
   const [buttonState, setButtonState] = useState(false);
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
+  
+  // hasil dari API
+  // durasi eksekusi program
+  const [duration, setDuration] = useState(0)
+  // boolean. jika path ditemukan dari start -> end
+  const [pathFound, setPathFound] = useState(false)
+  // pesan jika path tidak ditemukan / error lainnya
+  const [message, setMessage] = useState("")
+  // array berisi path yang ditemukan. contoh
+  // [
+  //  ["node-1", "node-2", "end"],
+  //  ["node-10", "node-11", "end"],
+  //  ...
+  // ]
+  const [possiblePath, setPossiblePath] = useState()
 
   //Search input handler
   const onChange1 = (event) => {
@@ -30,7 +45,7 @@ function App() {
   //Fetch data for autocomplete from wikipedia's API
   useEffect(() => {
     if (value1 !== "") {
-      fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + value1)
+      fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + encodeURIComponent(value1))
         .then((res) => {
           return res.json();
         }).then((jsonDat) => {
@@ -45,7 +60,7 @@ function App() {
 
   useEffect(() => {
     if (value2 !== "") {
-      fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + value2)
+      fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + encodeURIComponent(value2))
         .then((res) => {
           return res.json();
         }).then((jsonDat) => {
@@ -58,32 +73,51 @@ function App() {
     }
   }, [value2])
 
-  //Search button handler
+  // fetch api to backend 
 
-  const dataToSend = {
-    path_start: 'https://en.wikipedia.org/wiki/' + value1,
-    path_end: 'https://en.wikipedia.org/wiki/' + value2,
-    method: buttonState ? 'IDS' : 'BFS'
-  }
-  const onSearch = () => {
-    fetch('http://localhost:4000/path', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(dataToSend)
-    })
-      .then(response => {
-        // Handle response from backend
-        if (response.ok) {
-          console.log('Data sent successfully');
-        } else {
+  const sendData = async (dataToSend) => {
+    try {
+      fetch('http://localhost:4000/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataToSend)
+      })
+      .then((response) => {
+        if(!response.ok){
           console.error('Failed to send data:', response.statusText);
         }
+
+        return response.json();
       })
-      .catch(error => {
-        console.error('Error sending data:', error);
-      });
+      .then((data) => {
+        setDuration(data.time);
+        setMessage(data.message);
+        setPathFound(data.status);
+        setPossiblePath(data.path);
+
+        console.log(data)
+      })
+    } catch (err){
+      console.log(err)
+    }
+
+  }
+
+  //Search button handler
+
+  const onSearch = () => {
+    const dataToSend = {
+      start : value1,
+      end : value2,
+      path_start: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(value1),
+      path_end: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(value2),
+      method: buttonState ? 'IDS' : 'BFS'
+    }
+
+    console.log(dataToSend)
+    sendData(dataToSend)
   }
 
 
@@ -152,6 +186,26 @@ function App() {
           {buttonState ? <p>IDS</p> : <p>BFS</p>}
         </div>
         <div className='button-search' onClick={() => onSearch()}>Search</div>
+      </div>
+
+      {/* SHOW RESULT */}
+      <div>
+        {
+          pathFound &&
+          <>
+            <p>{message}</p>
+            { possiblePath.map((data) => (
+              data.map((path) => (
+                <li>{path}</li>
+              ))
+            ))}
+          </> 
+        }
+        {
+          !pathFound && 
+          <p>Path NOT Founded</p>
+        }
+        <p>execution time {duration}</p>
       </div>
     </div>
   );

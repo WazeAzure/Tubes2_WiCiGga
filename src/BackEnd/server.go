@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -8,9 +9,11 @@ import (
 )
 
 type pathJSON struct {
-	Path_start string `json:"path_start"`
-	Path_end   string `json:"path_end"`
-	Method     string `json:"method"`
+	Start     string `json:"start"`
+	End       string `json:"end"`
+	PageStart string `json:"page_start"`
+	PageEnd   string `json:"page_end"`
+	Method    string `json:"method"`
 }
 
 /*
@@ -19,20 +22,13 @@ type pathJSON struct {
 +------------------------------------------+
 */
 
-var path = pathJSON{
-	Path_start: "dummy_start",
-	Path_end:   "dummy_end",
-	Method:     "method",
-}
-
 func main() {
 	router := gin.Default()
 
 	router.Use(cors.Default())
 
 	// Define API endpoints
-	router.GET("/path", getPath)
-	router.POST("/path", addPath)
+	router.POST("/api", getPath)
 
 	// Start the server
 	router.Run(":4000")
@@ -44,18 +40,41 @@ func main() {
 +------------------------------------------+
 */
 
-// Handler for GET /items
+// Handler for GET /api
 func getPath(c *gin.Context) {
-	c.JSON(http.StatusOK, path)
-}
 
-// Handler for POST /items/add
-func addPath(c *gin.Context) {
-	var newPath pathJSON
-	if err := c.BindJSON(&newPath); err != nil {
+	var requestData pathJSON
+
+	if err := c.BindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	path = newPath
-	c.JSON(http.StatusCreated, gin.H{"message": "Item added successfully"})
+
+	page1 := sendApi(requestData.Start)
+	page2 := sendApi(requestData.End)
+
+	if !page1.Status {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "page with start value title not found"})
+		return
+	}
+
+	if !page2.Status {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "page with end value title not found"})
+		return
+	}
+
+	// clean input
+	var resp ResponseAPI
+
+	fmt.Print(requestData.Method)
+	if requestData.Method == "BFS" {
+		resp = BFS(page1.Url, page2.Url)
+	} else if requestData.Method == "IDS" {
+		fmt.Print("OIT INI DARI IDS")
+		resp = *IDS(page1.Url, page2.Url)
+	}
+
+	fmt.Println(resp.Path)
+
+	c.JSON(http.StatusOK, resp)
 }
