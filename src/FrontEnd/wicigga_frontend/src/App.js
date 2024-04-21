@@ -7,16 +7,16 @@ function App() {
   const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
 
-  //Search Bar Handler
+  //Search bar value
   const [value1, setValue1] = useState("");
   const [value2, setValue2] = useState("");
 
-  //Toggle Button Handler, false = BFS, true = IDS
+  //Toggle button handler, false = BFS, true = IDS
   const [buttonState, setButtonState] = useState(false);
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
 
-  //Input handler
+  //Search input handler
   const onChange1 = (event) => {
     setValue1(event.target.value);
     setSelected1(false);
@@ -27,7 +27,7 @@ function App() {
     setSelected2(false);
   }
 
-  //Fetch data for autocomplet from wikipedia's API
+  //Fetch data for autocomplete from wikipedia's API
   useEffect(() => {
     if (value1 !== "") {
       fetch("https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&format=json&formatversion=2&list=search&srsearch=" + value1)
@@ -58,9 +58,32 @@ function App() {
     }
   }, [value2])
 
-  //Search Button Handler
-  const onSearch = (searchTerm) => {
-    console.log("search", searchTerm);
+  //Search button handler
+
+  const dataToSend = {
+    path_start: 'https://en.wikipedia.org/wiki/' + value1,
+    path_end: 'https://en.wikipedia.org/wiki/' + value2,
+    method: buttonState ? 'IDS' : 'BFS'
+  }
+  const onSearch = () => {
+    fetch('http://localhost:4000/path', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dataToSend)
+    })
+      .then(response => {
+        // Handle response from backend
+        if (response.ok) {
+          console.log('Data sent successfully');
+        } else {
+          console.error('Failed to send data:', response.statusText);
+        }
+      })
+      .catch(error => {
+        console.error('Error sending data:', error);
+      });
   }
 
 
@@ -71,11 +94,12 @@ function App() {
 
 
       <div className='search-section'>
+
         {/* Left Search Section */}
 
         <div className='search-left'>
           <div className='search-bar-container'>
-            <input type="text" className='search-bar' value={value1} onChange={onChange1} />
+            <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} />
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data1.some(item => {
@@ -101,13 +125,13 @@ function App() {
 
         <div className='search-right'>
           <div className='search-bar-container'>
-            <input type="text" className='search-bar' value={value2} onChange={onChange2} />
+            <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} />
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data2.some(item => {
               const searchTerm = value2.toLowerCase();
               const pathString = item.toLowerCase();
-              return searchTerm && pathString.startsWith(searchTerm) && searchTerm !== pathString;
+              return !selected2 && searchTerm && pathString.startsWith(searchTerm) && searchTerm !== pathString;
             }) ? '' : 'dummy')}>
               {data2.filter(item => {
                 const searchTerm = value2.toLowerCase();

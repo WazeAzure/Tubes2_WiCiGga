@@ -7,9 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ResponseJSON struct {
-	Path   []string `json:"path"`
-	Status bool     `json:"status"`
+type pathJSON struct {
+	Path_start string `json:"path_start"`
+	Path_end   string `json:"path_end"`
+	Method     string `json:"method"`
 }
 
 /*
@@ -18,6 +19,12 @@ type ResponseJSON struct {
 +------------------------------------------+
 */
 
+var path = pathJSON{
+	Path_start: "dummy_start",
+	Path_end:   "dummy_end",
+	Method:     "method",
+}
+
 func main() {
 	router := gin.Default()
 
@@ -25,6 +32,7 @@ func main() {
 
 	// Define API endpoints
 	router.GET("/path", getPath)
+	router.POST("/path", addPath)
 
 	// Start the server
 	router.Run(":4000")
@@ -38,19 +46,16 @@ func main() {
 
 // Handler for GET /items
 func getPath(c *gin.Context) {
-	var resp ResponseJSON
-	resp.Path = []string{"Nigga-chan", "Nigga-balls", "Ching-chong"}
-	resp.Status = true
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, path)
 }
 
 // Handler for POST /items/add
-// func addItem(c *gin.Context) {
-// 	var newItem Item
-// 	if err := c.BindJSON(&newItem); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	items = append(items, newItem)
-// 	c.JSON(http.StatusCreated, gin.H{"message": "Item added successfully"})
-// }
+func addPath(c *gin.Context) {
+	var newPath pathJSON
+	if err := c.BindJSON(&newPath); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	path = newPath
+	c.JSON(http.StatusCreated, gin.H{"message": "Item added successfully"})
+}
