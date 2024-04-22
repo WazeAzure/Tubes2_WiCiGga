@@ -15,7 +15,12 @@ function App() {
   const [buttonState, setButtonState] = useState(false);
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
-  
+
+  //Data completion handler
+  const [dataComplete, setDataComplete] = useState(false)
+  const [form1, setFrom1Red] = useState(false)
+  const [form2, setFrom2Red] = useState(false)
+
   // hasil dari API
   // durasi eksekusi program
   const [duration, setDuration] = useState(0)
@@ -35,14 +40,34 @@ function App() {
   const onChange1 = (event) => {
     setValue1(event.target.value);
     setSelected1(false);
+    setFrom1Red(false);
   }
 
   const onChange2 = (event) => {
     setValue2(event.target.value);
     setSelected2(false);
+    setFrom2Red(false);
   }
 
+  const turnFormRed = (data1, data2) => {
+    if (data1.length === 0 || value1 === '') {
+      setFrom1Red(true);
+      setValue1('');
+    }
+    if (data2.length === 0 || value2 === '') {
+      setFrom2Red(true);
+      setValue2('');
+    }
+  }
+
+  useEffect(() => {
+    setDataComplete(data1.length !== 0 && data2.length !== 0 && value1 !== '' && value2 !== '');
+  }, [data1, data2]);
+
+
+
   //Fetch data for autocomplete from wikipedia's API
+
   useEffect(() => {
     if (value1 !== "") {
       fetch("https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&list=search&srsearch=" + encodeURIComponent(value1))
@@ -73,9 +98,11 @@ function App() {
     }
   }, [value2])
 
-  // fetch api to backend 
+  // fetch api to backend , post data to API
 
   const sendData = async (dataToSend) => {
+    // console.log(value1 === '')
+    // console.log(value2 === '')
     try {
       fetch('http://localhost:4000/api', {
         method: 'POST',
@@ -84,22 +111,22 @@ function App() {
         },
         body: JSON.stringify(dataToSend)
       })
-      .then((response) => {
-        if(!response.ok){
-          console.error('Failed to send data:', response.statusText);
-        }
+        .then((response) => {
+          if (!response.ok) {
+            console.error('Failed to send data:', response.statusText);
+          }
 
-        return response.json();
-      })
-      .then((data) => {
-        setDuration(data.time);
-        setMessage(data.message);
-        setPathFound(data.status);
-        setPossiblePath(data.path);
+          return response.json();
+        })
+        .then((data) => {
+          setDuration(data.time);
+          setMessage(data.message);
+          setPathFound(data.status);
+          setPossiblePath(data.path);
 
-        console.log(data)
-      })
-    } catch (err){
+          console.log(data)
+        })
+    } catch (err) {
       console.log(err)
     }
 
@@ -109,8 +136,8 @@ function App() {
 
   const onSearch = () => {
     const dataToSend = {
-      start : value1,
-      end : value2,
+      start: value1,
+      end: value2,
       path_start: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(value1),
       path_end: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(value2),
       method: buttonState ? 'IDS' : 'BFS'
@@ -133,7 +160,8 @@ function App() {
 
         <div className='search-left'>
           <div className='search-bar-container'>
-            <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} />
+            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} />
+              : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value1} onChange={onChange1} />}
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data1.some(item => {
@@ -144,6 +172,7 @@ function App() {
               {data1.filter(item => {
                 const searchTerm = value1.toLowerCase();
                 const pathString = item.toLowerCase();
+                // console.log(selected1)
 
                 return !selected1 && searchTerm && pathString.startsWith(searchTerm);
               }).slice(0, 5)
@@ -159,7 +188,8 @@ function App() {
 
         <div className='search-right'>
           <div className='search-bar-container'>
-            <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} />
+            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} />
+              : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value2} onChange={onChange2} />}
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data2.some(item => {
@@ -170,6 +200,7 @@ function App() {
               {data2.filter(item => {
                 const searchTerm = value2.toLowerCase();
                 const pathString = item.toLowerCase();
+                // console.log(selected2)
 
                 return !selected2 && searchTerm && pathString.startsWith(searchTerm) && searchTerm !== pathString;
               })
@@ -185,7 +216,8 @@ function App() {
         <div className='button-mode' onClick={() => setButtonState(!buttonState)}>
           {buttonState ? <p>IDS</p> : <p>BFS</p>}
         </div>
-        <div className='button-search' onClick={() => onSearch()}>Search</div>
+        {dataComplete ? <div className='button-search' onClick={() => onSearch()}>Search</div>
+          : <div className='button-search' onClick={() => turnFormRed(data1, data2)}>Search</div>}
       </div>
 
       {/* SHOW RESULT */}
@@ -194,15 +226,15 @@ function App() {
           pathFound &&
           <>
             <p>{message}</p>
-            { possiblePath.map((data) => (
+            {possiblePath.map((data) => (
               data.map((path) => (
                 <li>{path}</li>
               ))
             ))}
-          </> 
+          </>
         }
         {
-          !pathFound && 
+          !pathFound &&
           <p>Path NOT Founded</p>
         }
         <p>execution time {duration}</p>
