@@ -8,6 +8,7 @@ import (
 
 var (
 	url_queue   []string
+	visited_bfs map[string]string
 	mutex       sync.Mutex
 	wg          sync.WaitGroup
 	slave       int
@@ -20,21 +21,19 @@ func bfsHandler(url string, end string) *ResponseAPI {
 	defer timeTrack(time.Now(), "scrapWeb", &resp.Time)
 
 	current_url = url
-	wg.Add(1)
 	BFS(current_url, end, &resp)
 	current_url = url_queue[0]
 	url_queue = url_queue[1:]
 
 	for current_url != end {
 		if len(url_queue) != 0 {
-			wg.Add(1)
 			go BFS(current_url, end, &resp)
+			// give 100 ms delay
+			time.Sleep(50 * time.Millisecond)
 			current_url = url_queue[0]
 			url_queue = url_queue[1:]
 		}
 	}
-
-	wg.Wait()
 
 	if current_url == end {
 		resp.Status = true
@@ -51,9 +50,8 @@ func bfsHandler(url string, end string) *ResponseAPI {
 }
 
 func BFS(current_url string, end string, resp *ResponseAPI) {
-	defer wg.Done()
 
-	fmt.Println(current_url)
+	// fmt.Println(current_url)
 
 	link_res := scrapWeb(current_url)
 	for _, elmt := range link_res {
@@ -61,6 +59,14 @@ func BFS(current_url string, end string, resp *ResponseAPI) {
 		if !isIn(elmt, url_queue) {
 			url_queue = append(url_queue, elmt)
 		}
+	}
+
+	if current_url == end {
+		resp.Status = true
+		resp.Message = "Path Found"
+		fmt.Println("====================================")
+		fmt.Println("------------ FOUND -----------------")
+		fmt.Println("====================================")
 	}
 
 }
