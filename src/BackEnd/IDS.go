@@ -5,7 +5,9 @@ import (
 	"time"
 )
 
-func DLS(start string, end string, maxdepth int, visited_dls map[string]bool, saved_path []string, ans *[][]string) bool {
+var visited_node = make(map[string]map[string]bool)
+
+func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]string) bool {
 	if start == end {
 		*ans = append(*ans, saved_path)
 		for _, elmt := range saved_path {
@@ -18,22 +20,32 @@ func DLS(start string, end string, maxdepth int, visited_dls map[string]bool, sa
 		return false
 	}
 
-	url_scrap := scrapWeb(start)
+	// cek apakah ada elemen map yang key nya bernilai start di visited_node
+	var url_scrap []string
+	var url_list = make(map[string]bool)
 
-	url_list := []string{}
+	url_visited, exist := visited_node[start]
+	if !exist {
+		url_scrap = scrapWeb(start)
+		visited_node[start] = make(map[string]bool)
+	} else {
+		url_list = url_visited
+	}
 
 	for _, elmt := range url_scrap {
-		_, err := visited_dls[elmt]
+		_, err := visited_node[elmt]
 
 		if !err {
-			visited_dls[elmt] = true
-			url_list = append(url_list, elmt)
+			// kalau ga ada di map visited_node
+			visited_node[start][elmt] = true
+			url_list[elmt] = true
 		}
 	}
 
-	for _, elmt := range url_list {
-		saved_path2 := append(saved_path, elmt)
-		if DLS(elmt, end, maxdepth-1, visited_dls, saved_path2, ans) {
+	for key, _ := range url_list {
+		saved_path2 := append(saved_path, key)
+		fmt.Println(key)
+		if DLS(key, end, maxdepth-1, saved_path2, ans) {
 			return true
 		}
 	}
@@ -49,8 +61,7 @@ func IDS(start string, end string) *ResponseAPI {
 
 	var i int = 0
 	for !isFound {
-		var visited_dls = map[string]bool{}
-		if DLS(start, end, i, visited_dls, saved_path, &resp.Path) {
+		if DLS(start, end, i, saved_path, &resp.Path) {
 			isFound = true
 			break
 		}

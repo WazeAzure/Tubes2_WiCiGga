@@ -268,8 +268,8 @@ func scrapWeb(url string) []string {
 }
 
 func main() {
-	page1 := sendApi("TES")
-	page2 := sendApi("PewDiePie")
+	page1 := sendApi("Jokowi")
+	page2 := sendApi("Central Java")
 
 	// get initial value
 	fmt.Println(PrettyPrint(page1))
@@ -277,8 +277,8 @@ func main() {
 
 	// start scraping
 	// max_depth := 3
-	bfsHandler(page1.Url, page2.Url)
+	// bfsHandler(page1.Url, page2.Url)
 
-	// x := IDS(page1.Url, page2.Url, max_depth)
-	// fmt.Println(x)
+	x := IDS(page1.Url, page2.Url)
+	fmt.Println(x)
 }
