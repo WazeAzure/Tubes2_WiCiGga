@@ -23,42 +23,34 @@ func bfsHandler(url string, end string) *ResponseAPI {
 	var resp ResponseAPI
 
 	defer timeTrack(time.Now(), "scrapWeb", &resp.Time)
+	fmt.Println("oawjmdkam")
+	var current_url = []string{url}
 
-	current_url = url
-
-	for current_url != end {
-
-		go BFS(current_url, end, &resp)
-		// time.Sleep(time.Millisecond * randomTime())
-
-		if len(url_queue) > 0 {
-			current_url = url_queue[0]
-			url_queue = url_queue[1:]
-		}
-	}
+	BFS(current_url, end, &resp, 0)
 
 	return &resp
 }
 
-func BFS(current_url string, end string, resp *ResponseAPI) {
+func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) bool {
 
-	fmt.Println(current_url)
-
-	link_res := scrapWeb(current_url)
-
-	for _, elmt := range link_res {
-		// check if
-		go func() {
-			mutex.Lock()
-			_, err := visited_bfs[elmt]
-			mutex.Unlock()
+	// fmt.Println(current_url)
+	var temp_url_list []string
+	fmt.Println(current_url_list)
+	for _, elmt := range current_url_list {
+		link_res := scrapWeb(elmt)
+		fmt.Println(elmt)
+		for _, elmt2 := range link_res {
+			_, err := visited_bfs[elmt2]
 			if !err {
 				// not exist
-				mutex.Lock()
-				visited_bfs[elmt] = true
-				url_queue = append(url_queue, elmt)
-				mutex.Unlock()
+				if elmt2 == end {
+					//termminates when elmt2 equals end
+					return true
+				}
+				visited_bfs[elmt2] = true
+				temp_url_list = append(temp_url_list, elmt2)
 			}
-		}()
+		}
 	}
+	return BFS(temp_url_list, end, resp, depth+1)
 }
