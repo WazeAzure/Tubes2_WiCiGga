@@ -173,7 +173,7 @@ func timeTrack(start time.Time, name string, executedTime *time.Duration) {
 
 func customFileterURL(url string) bool {
 	a := strings.HasPrefix(url, "/wiki/")
-	namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:"}
+	namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:", "Main_Page"}
 
 	for _, elmt := range namespace_list {
 		a = a && !strings.Contains(url, elmt)
