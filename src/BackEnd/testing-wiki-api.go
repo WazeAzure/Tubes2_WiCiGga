@@ -268,8 +268,8 @@ func scrapWeb(url string) []string {
 }
 
 func main() {
-	page1 := sendApi("Mike Tyson")
-	page2 := sendApi("Joko Widodo")
+	page1 := sendApi("Jokowi")
+	page2 := sendApi("Central Java")
 
 	// get initial value
 	fmt.Println(PrettyPrint(page1))
