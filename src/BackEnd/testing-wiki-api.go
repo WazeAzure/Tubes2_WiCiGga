@@ -277,8 +277,8 @@ func main() {
 
 	// start scraping
 	// max_depth := 3
-	// bfsHandler(page1.Url, page2.Url)
+	bfsHandler(page1.Url, page2.Url)
 
-	x := IDS(page1.Url, page2.Url)
-	fmt.Println(x)
+	// x := IDS(page1.Url, page2.Url)
+	// fmt.Println(x)
 }
