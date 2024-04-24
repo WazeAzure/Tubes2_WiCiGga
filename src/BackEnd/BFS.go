@@ -8,7 +8,6 @@ import (
 )
 
 var visited_bfs = make(map[string]bool)
-var bfs_slave int = 10
 var (
 	url_queue   []string
 	mutex       sync.Mutex
@@ -25,22 +24,19 @@ func bfsHandler(url string, end string) *ResponseAPI {
 
 	defer timeTrack(time.Now(), "scrapWeb", &resp.Time)
 	var current_url = []string{url}
-
-	// stop := make(chan struct{})
-	BFS(current_url, end, &resp, 0)
-
+	n := 0
+	var bfs_slave int = 10
+	var semaphore = make(chan struct{}, bfs_slave)
+	BFS(semaphore, current_url, end, &resp, &n)
+	fmt.Println("nilai dari depth := ", n)
 	return &resp
 }
 
-var terminationLock sync.Mutex
-var terminationClosed bool
-
-func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) {
-	semaphore := make(chan struct{}, bfs_slave)
-	// fmt.Println(current_url)
+func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *ResponseAPI, depth *int) {
+	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
 	terminate := make(chan struct{})
-	stop := make(chan struct{})
+	stop := false
 	var once sync.Once
 
 	for _, elmt := range current_url_list {
@@ -53,15 +49,14 @@ func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) {
 
 			link_res := scrapWeb(elmt_conc)
 			fmt.Println(elmt_conc)
-
+		free:
 			for _, elmt2 := range link_res {
 				select {
 				case <-terminate:
 					once.Do(func() {
-						close(stop)
-						fmt.Println("BFS STOPPED")
+						stop = true
 					})
-					return
+					break free
 				default:
 					mutex.Lock()
 					_, err := visited_bfs[elmt2]
@@ -69,10 +64,9 @@ func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) {
 					if !err {
 						// not exist
 						if elmt2 == end {
-							// stop right
-							fmt.Println(elmt2 + "\n\n\n\n\n\n")
+							// stop right here
+							fmt.Println(elmt2)
 							close(terminate)
-							return
 						}
 						mutex.Lock()
 						visited_bfs[elmt2] = true
@@ -83,47 +77,15 @@ func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) {
 				}
 			}
 		}(elmt)
-
+		if stop {
+			break
+		}
 	}
+
 	wg.Wait()
-	select {
-	case <-stop:
-		fmt.Println("BFS STOPPED FR")
+	if stop {
 		return
-	default:
-		BFS(temp_url_list, end, resp, depth+1)
 	}
+	*depth = *depth + 1
+	BFS(semaphore, temp_url_list, end, resp, depth)
 }
-
-// func scrapper(elmt_conc string, end string, temp_url_list *[]string, semaphore <-chan struct{}) {
-// 	select {
-// 	case <-terminate:
-// 		fmt.Println("case finished")
-// 		return
-// 	default:
-// 		defer func() { <-semaphore }()
-// 		defer wg.Done()
-
-// 		link_res := scrapWeb(elmt_conc)
-// 		fmt.Println(elmt_conc)
-
-// 		for _, elmt2 := range link_res {
-// 			mutex.Lock()
-// 			_, err := visited_bfs[elmt2]
-// 			mutex.Unlock()
-// 			if !err {
-// 				// not exist
-// 				if elmt2 == end {
-// 					// stop right here
-// 					fmt.Println(elmt2 + "\n\n\n\n\n\n")
-// 					stop = true
-// 					return
-// 				}
-// 				mutex.Lock()
-// 				visited_bfs[elmt2] = true
-// 				mutex.Unlock()
-// 				*temp_url_list = append(*temp_url_list, elmt2)
-// 			}
-// 		}
-// 	}
-// }
