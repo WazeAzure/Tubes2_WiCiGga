@@ -324,14 +324,14 @@ func main() {
 
 	// start scraping
 	// max_depth := 3
-	hasil := bfsHandler(page1.Url, page2.Url)
-	fmt.Println(hasil.Message)
-	fmt.Println(hasil.Status)
-	fmt.Println(hasil.Time)
+	// hasil := bfsHandler(page1.Url, page2.Url)
+	// fmt.Println(hasil.Message)
+	// fmt.Println(hasil.Status)
+	// fmt.Println(hasil.Time)
 
-	fmt.Println(hasil.Nodes)
-	fmt.Println(hasil.Edges)
+	// fmt.Println(hasil.Nodes)
+	// fmt.Println(hasil.Edges)
 
-	// x := IDS(page1.Url, page2.Url)
-	// fmt.Println(x)
+	x := IDS(page1.Url, page2.Url)
+	fmt.Println(x)
 }

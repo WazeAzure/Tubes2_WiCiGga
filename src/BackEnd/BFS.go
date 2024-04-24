@@ -34,7 +34,6 @@ func bfsHandler(url string, end string) *ResponseAPI {
 	x := BFS(semaphore, current_url, end, &resp, &n)
 
 	timeTrack(time_start, "scrapWeb", &resp.Time)
-
 	fmt.Println("degree dari path bernilai := ", n+1, x)
 
 	time.Sleep(1 * time.Second)
