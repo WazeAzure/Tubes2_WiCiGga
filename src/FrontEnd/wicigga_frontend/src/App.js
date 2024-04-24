@@ -1,5 +1,6 @@
 import './App.css';
 import { useState, useEffect } from 'react';
+import GraphShow from './components/Graph/GraphComponent';
 
 
 function App() {
@@ -240,6 +241,8 @@ function App() {
         }
         <p>execution time {duration}</p>
       </div>
+      {/* VISUALIZE RESULT IN GRAPH */}
+      <GraphShow />
     </div>
   );
 }
