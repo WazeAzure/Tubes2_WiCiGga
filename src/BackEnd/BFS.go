@@ -8,6 +8,8 @@ import (
 )
 
 var visited_bfs = make(map[string]bool)
+var bfs_slave int = 20
+var semaphore = make(chan struct{}, bfs_slave)
 var (
 	url_queue   []string
 	mutex       sync.Mutex
@@ -25,8 +27,6 @@ func bfsHandler(url string, end string) *ResponseAPI {
 	defer timeTrack(time.Now(), "scrapWeb", &resp.Time)
 	var current_url = []string{url}
 	n := 0
-	var bfs_slave int = 10
-	var semaphore = make(chan struct{}, bfs_slave)
 	BFS(semaphore, current_url, end, &resp, &n)
 	fmt.Println("nilai dari depth := ", n)
 	return &resp
@@ -48,7 +48,6 @@ func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *R
 			defer wg.Done()
 
 			link_res := scrapWeb(elmt_conc)
-			fmt.Println(elmt_conc)
 		free:
 			for _, elmt2 := range link_res {
 				select {
@@ -65,8 +64,8 @@ func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *R
 						// not exist
 						if elmt2 == end {
 							// stop right here
-							fmt.Println(elmt2)
 							close(terminate)
+							fmt.Println(elmt2)
 						}
 						mutex.Lock()
 						visited_bfs[elmt2] = true
@@ -80,6 +79,7 @@ func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *R
 		if stop {
 			break
 		}
+		fmt.Println(elmt)
 	}
 
 	wg.Wait()
