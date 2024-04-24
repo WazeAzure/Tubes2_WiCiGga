@@ -268,7 +268,7 @@ func scrapWeb(url string) []string {
 }
 
 func main() {
-	page1 := sendApi("Jokowi")
+	page1 := sendApi("TES")
 	page2 := sendApi("PewDiePie")
 
 	// get initial value
