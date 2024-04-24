@@ -74,7 +74,5 @@ func getPath(c *gin.Context) {
 		resp = *IDS(page1.Url, page2.Url)
 	}
 
-	fmt.Println(resp.Path)
-
 	c.JSON(http.StatusOK, resp)
 }

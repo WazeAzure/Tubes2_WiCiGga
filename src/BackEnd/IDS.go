@@ -59,9 +59,11 @@ func IDS(start string, end string) *ResponseAPI {
 	isFound := false
 	saved_path := []string{}
 
+	var p [][]string
+
 	var i int = 0
 	for !isFound {
-		if DLS(start, end, i, saved_path, &resp.Path) {
+		if DLS(start, end, i, saved_path, &p) {
 			isFound = true
 			break
 		}
@@ -69,7 +71,7 @@ func IDS(start string, end string) *ResponseAPI {
 	}
 
 	resp.Status = isFound
-	resp.Path = append(resp.Path, saved_path)
+	// resp.Path = append(resp.Path, saved_path)
 	if isFound {
 		resp.Message = "Path Found"
 		for _, elmt := range saved_path {

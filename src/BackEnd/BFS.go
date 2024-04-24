@@ -51,7 +51,7 @@ func bfsHandler(url string, end string) *ResponseAPI {
 			}
 		}
 
-		resp.Nodes, resp.Edges = convertToVisualizerHandler(url, end, parent_child_bfs_temp)
+		resp.Nodes, resp.Edges = convertToVisualizerHandler(url, end, parent_child_bfs_temp, n)
 	}
 	return &resp
 }

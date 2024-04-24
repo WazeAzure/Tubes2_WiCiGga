@@ -279,10 +279,20 @@ func scrapWeb(url string) []string {
 	return final_ans
 }
 
-func convertToVisualizer(id *int, depth int, temp_nodes map[Node]int, temp_edges map[Edge]bool, temp_visited map[string]bool, graph map[string]map[string]bool, url string, start string) {
+func convertToVisualizer(id *int, depth int, temp_nodes map[Node]int, temp_edges map[Edge]bool, temp_visited map[string]bool, graph map[string]map[string]bool, url string, start string, maxdepth int) bool {
 	if url == start {
-		return
+		// create edge
+
+		return true
 	}
+
+	if depth > maxdepth {
+		// fmt.Println(depth, " ", maxdepth, " - depth | max depth")
+		return false
+	}
+
+	fmt.Println("current url: ", url)
+	fmt.Println("current depth: ", depth)
 
 	_, err := temp_visited[url]
 	if !err {
@@ -290,48 +300,58 @@ func convertToVisualizer(id *int, depth int, temp_nodes map[Node]int, temp_edges
 		temp_visited[url] = true
 
 		// create Node
+		fmt.Println("========= NODE CREATED =========")
 		temp_nodes[Node{id: *id, level: depth, label: url}] = *id
 		*id++
 	}
 
 	for key, _ := range graph[url] {
+
 		// create edges
-		temp_edges[Edge{from: key, to: url}] = true
+		fmt.Println("url: ", key)
+
+		// time.Sleep(1 * time.Second)
 		// traverse
-		convertToVisualizer(id, depth+1, temp_nodes, temp_edges, temp_visited, graph, key, start)
+		x := convertToVisualizer(id, depth+1, temp_nodes, temp_edges, temp_visited, graph, key, start, maxdepth)
+		if x {
+			// create edge
+			temp_edges[Edge{from: key, to: url}] = true
+		}
 	}
+
+	return true
 }
 
-func convertToVisualizerHandler(start string, end string, temp map[string]map[string]bool) (map[Node]int, map[Edge]bool) {
+func convertToVisualizerHandler(start string, end string, temp map[string]map[string]bool, maxdepth int) (map[Node]int, map[Edge]bool) {
 
 	var temp_nodes = make(map[Node]int)
 	var temp_edges = make(map[Edge]bool)
 
 	var temp_visited = make(map[string]bool)
 	id := 0
-	convertToVisualizer(&id, 0, temp_nodes, temp_edges, temp_visited, temp, end, start)
+	convertToVisualizer(&id, 0, temp_nodes, temp_edges, temp_visited, temp, end, start, maxdepth)
 
 	return temp_nodes, temp_edges
 }
 
-func main() {
-	page1 := sendApi("Jokowi")
-	page2 := sendApi("Central Java")
+// func main() {
+// 	page1 := sendApi("Jokowi")
+// 	page2 := sendApi("Central Java")
 
-	// get initial value
-	fmt.Println(PrettyPrint(page1))
-	fmt.Println(PrettyPrint(page2))
+// 	// get initial value
+// 	fmt.Println(PrettyPrint(page1))
+// 	fmt.Println(PrettyPrint(page2))
 
-	// start scraping
-	// max_depth := 3
-	hasil := bfsHandler(page1.Url, page2.Url)
-	fmt.Println(hasil.Message)
-	fmt.Println(hasil.Status)
-	fmt.Println(hasil.Time)
+// 	// start scraping
+// 	// max_depth := 3
+// 	hasil := bfsHandler(page1.Url, page2.Url)
+// 	fmt.Println(hasil.Message)
+// 	fmt.Println(hasil.Status)
+// 	fmt.Println(hasil.Time)
 
-	fmt.Println(hasil.Nodes)
-	fmt.Println(hasil.Edges)
+// 	fmt.Println(hasil.Nodes)
+// 	fmt.Println(hasil.Edges)
 
-	// x := IDS(page1.Url, page2.Url)
-	// fmt.Println(x)
-}
+// 	// x := IDS(page1.Url, page2.Url)
+// 	// fmt.Println(x)
+// }
