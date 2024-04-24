@@ -8,7 +8,6 @@ import (
 )
 
 var visited_bfs = make(map[string]bool)
-var bfs_slave int = 20
 var (
 	url_queue   []string
 	mutex       sync.Mutex
@@ -25,24 +24,21 @@ func bfsHandler(url string, end string) *ResponseAPI {
 
 	defer timeTrack(time.Now(), "scrapWeb", &resp.Time)
 	var current_url = []string{url}
-	// stop := make(chan struct{})
-	x := BFS(current_url, end, &resp, 0)
-
-	fmt.Println("nilai dari x := ", x)
+	n := 0
+	var bfs_slave int = 10
+	var semaphore = make(chan struct{}, bfs_slave)
+	BFS(semaphore, current_url, end, &resp, &n)
+	fmt.Println("nilai dari depth := ", n)
 	return &resp
 }
 
-var terminationLock sync.Mutex
-var terminationClosed bool
-
-func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) bool {
-	semaphore := make(chan struct{}, bfs_slave)
+func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *ResponseAPI, depth *int) {
+	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
 	terminate := make(chan struct{})
-	stop := make(chan struct{})
+	stop := false
 	var once sync.Once
 
-	x := false
 	for _, elmt := range current_url_list {
 		wg.Add(1)
 		semaphore <- struct{}{}
@@ -52,18 +48,15 @@ func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) bo
 			defer wg.Done()
 
 			link_res := scrapWeb(elmt_conc)
-			if !x {
-				fmt.Println(elmt_conc)
-			}
-
+			fmt.Println(elmt_conc)
+		free:
 			for _, elmt2 := range link_res {
 				select {
 				case <-terminate:
 					once.Do(func() {
-						close(stop)
-						fmt.Println("BFS STOPPED")
-						x = true
+						stop = true
 					})
+					break free
 				default:
 					mutex.Lock()
 					_, err := visited_bfs[elmt2]
@@ -71,11 +64,9 @@ func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) bo
 					if !err {
 						// not exist
 						if elmt2 == end {
-							// stop right
+							// stop right here
 							fmt.Println(elmt2)
-							fmt.Println(depth)
 							close(terminate)
-							return
 						}
 						mutex.Lock()
 						visited_bfs[elmt2] = true
@@ -86,17 +77,15 @@ func BFS(current_url_list []string, end string, resp *ResponseAPI, depth int) bo
 				}
 			}
 		}(elmt)
-
-		if x {
-			return true
+		if stop {
+			break
 		}
 	}
 
 	wg.Wait()
-	select {
-	case <-stop:
-		return true
-	default:
-		return BFS(temp_url_list, end, resp, depth+1)
+	if stop {
+		return
 	}
+	*depth = *depth + 1
+	BFS(semaphore, temp_url_list, end, resp, depth)
 }

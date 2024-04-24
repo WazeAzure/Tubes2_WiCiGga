@@ -62,7 +62,7 @@ function App() {
 
   useEffect(() => {
     setDataComplete(data1.length !== 0 && data2.length !== 0 && value1 !== '' && value2 !== '');
-  }, [data1, data2]);
+  }, [data1, data2, value1, value2]);
 
 
 
@@ -135,16 +135,17 @@ function App() {
   //Search button handler
 
   const onSearch = () => {
+
     const dataToSend = {
       start: value1,
       end: value2,
-      path_start: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(value1),
-      path_end: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(value2),
       method: buttonState ? 'IDS' : 'BFS'
     }
+    if (dataComplete) {
 
-    console.log(dataToSend)
-    sendData(dataToSend)
+      console.log(dataToSend)
+      sendData(dataToSend)
+    }
   }
 
 
@@ -167,17 +168,17 @@ function App() {
             <div className={'dropdown' + (data1.some(item => {
               const searchTerm = value1.toLowerCase();
               const pathString = item.toLowerCase();
-              return !selected1 && searchTerm && pathString.startsWith(searchTerm);
+              return !selected1 && searchTerm;
             }) ? '' : 'dummy')}>
               {data1.filter(item => {
                 const searchTerm = value1.toLowerCase();
                 const pathString = item.toLowerCase();
-                // console.log(selected1)
+                // console.log(selected2)
 
-                return !selected1 && searchTerm && pathString.startsWith(searchTerm);
+                return !selected1 && searchTerm;
               }).slice(0, 5)
                 .map((item) => (
-                  <li className="search-result" value={item} onClick={() => { setValue1(item); setSelected1(true); }}>{item}</li>
+                  <li className="search-result" onClick={() => { setValue1(item); setSelected1(true); }}>{item}</li>
                 ))
               }
             </div>
@@ -195,15 +196,15 @@ function App() {
             <div className={'dropdown' + (data2.some(item => {
               const searchTerm = value2.toLowerCase();
               const pathString = item.toLowerCase();
-              return !selected2 && searchTerm && pathString.startsWith(searchTerm) && searchTerm !== pathString;
+              return !selected2 && searchTerm;
             }) ? '' : 'dummy')}>
               {data2.filter(item => {
                 const searchTerm = value2.toLowerCase();
                 const pathString = item.toLowerCase();
                 // console.log(selected2)
 
-                return !selected2 && searchTerm && pathString.startsWith(searchTerm) && searchTerm !== pathString;
-              })
+                return !selected2 && searchTerm;
+              }).slice(0, 5)
                 .map((item) => (
                   <li className="search-result" onClick={() => { setValue2(item); setSelected2(true); }}>{item}</li>
                 ))
