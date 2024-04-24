@@ -14,11 +14,23 @@ import (
 	"golang.org/x/net/html"
 )
 
+type Node struct {
+	id    int    `json:"id"`
+	level int    `json:"level"`
+	label string `json:"label"`
+}
+
+type Edge struct {
+	from string `json:"from"`
+	to   string `json:"to"`
+}
+
 type ResponseAPI struct {
-	Path    map[string]map[string]bool `json:"path"`
-	Status  bool                       `json:"status"`
-	Message string                     `json:"message"`
-	Time    time.Duration              `json:"time"`
+	Nodes   map[Node]int  `json:"node"`
+	Edges   map[Edge]bool `json:"from,to"`
+	Status  bool          `json:"status"`
+	Message string        `json:"message"`
+	Time    time.Duration `json:"time"`
 }
 
 type Page struct {
@@ -267,9 +279,44 @@ func scrapWeb(url string) []string {
 	return final_ans
 }
 
+func convertToVisualizer(id *int, depth int, temp_nodes map[Node]int, temp_edges map[Edge]bool, temp_visited map[string]bool, graph map[string]map[string]bool, url string, start string) {
+	if url == start {
+		return
+	}
+
+	_, err := temp_visited[url]
+	if !err {
+		// not exist in visited
+		temp_visited[url] = true
+
+		// create Node
+		temp_nodes[Node{id: *id, level: depth, label: url}] = *id
+		*id++
+	}
+
+	for key, _ := range graph[url] {
+		// create edges
+		temp_edges[Edge{from: key, to: url}] = true
+		// traverse
+		convertToVisualizer(id, depth+1, temp_nodes, temp_edges, temp_visited, graph, key, start)
+	}
+}
+
+func convertToVisualizerHandler(start string, end string, temp map[string]map[string]bool) (map[Node]int, map[Edge]bool) {
+
+	var temp_nodes = make(map[Node]int)
+	var temp_edges = make(map[Edge]bool)
+
+	var temp_visited = make(map[string]bool)
+	id := 0
+	convertToVisualizer(&id, 0, temp_nodes, temp_edges, temp_visited, temp, end, start)
+
+	return temp_nodes, temp_edges
+}
+
 func main() {
-	page1 := sendApi("TES")
-	page2 := sendApi("PewDiePie")
+	page1 := sendApi("Jokowi")
+	page2 := sendApi("Central Java")
 
 	// get initial value
 	fmt.Println(PrettyPrint(page1))
@@ -277,7 +324,13 @@ func main() {
 
 	// start scraping
 	// max_depth := 3
-	bfsHandler(page1.Url, page2.Url)
+	hasil := bfsHandler(page1.Url, page2.Url)
+	fmt.Println(hasil.Message)
+	fmt.Println(hasil.Status)
+	fmt.Println(hasil.Time)
+
+	fmt.Println(hasil.Nodes)
+	fmt.Println(hasil.Edges)
 
 	// x := IDS(page1.Url, page2.Url)
 	// fmt.Println(x)
