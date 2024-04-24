@@ -15,10 +15,10 @@ import (
 )
 
 type ResponseAPI struct {
-	Path    [][]string    `json:"path"`
-	Status  bool          `json:"status"`
-	Message string        `json:"message"`
-	Time    time.Duration `json:"time"`
+	Path    map[string]map[string]bool `json:"path"`
+	Status  bool                       `json:"status"`
+	Message string                     `json:"message"`
+	Time    time.Duration              `json:"time"`
 }
 
 type Page struct {
