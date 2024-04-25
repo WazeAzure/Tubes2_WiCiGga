@@ -22,6 +22,10 @@ function App() {
   const [form1, setFrom1Red] = useState(false)
   const [form2, setFrom2Red] = useState(false)
 
+  // Data for GRAPH
+  const [nodes, setNodes] = useState([])
+  const [edges, setEdges] = useState([])
+
   // hasil dari API
   // durasi eksekusi program
   const [duration, setDuration] = useState(0)
@@ -29,13 +33,6 @@ function App() {
   const [pathFound, setPathFound] = useState(false)
   // pesan jika path tidak ditemukan / error lainnya
   const [message, setMessage] = useState("")
-  // array berisi path yang ditemukan. contoh
-  // [
-  //  ["node-1", "node-2", "end"],
-  //  ["node-10", "node-11", "end"],
-  //  ...
-  // ]
-  const [possiblePath, setPossiblePath] = useState()
 
   //Search input handler
   const onChange1 = (event) => {
@@ -75,10 +72,10 @@ function App() {
         .then((res) => {
           return res.json();
         }).then((jsonDat) => {
-          console.log(jsonDat.query);
+          // console.log(jsonDat.query);
           return jsonDat.query;
         }).then((que) => {
-          console.log(que.search.map(item => item.title));
+          // console.log(que.search.map(item => item.title));
           setData1(que.search.map(item => item.title));;
         });
     }
@@ -90,10 +87,10 @@ function App() {
         .then((res) => {
           return res.json();
         }).then((jsonDat) => {
-          console.log(jsonDat.query);
+          // console.log(jsonDat.query);
           return jsonDat.query;
         }).then((que) => {
-          console.log(que.search.map(item => item.title));
+          // console.log(que.search.map(item => item.title));
           setData2(que.search.map(item => item.title));;
         });
     }
@@ -123,9 +120,11 @@ function App() {
           setDuration(data.time);
           setMessage(data.message);
           setPathFound(data.status);
-          setPossiblePath(data.path);
+          setEdges(data.edges);
+          setNodes(data.nodes);
 
-          console.log(data)
+          // console.log(data)
+
         })
     } catch (err) {
       console.log(err)
@@ -228,11 +227,6 @@ function App() {
           pathFound &&
           <>
             <p>{message}</p>
-            {possiblePath.map((data) => (
-              data.map((path) => (
-                <li>{path}</li>
-              ))
-            ))}
           </>
         }
         {
@@ -242,7 +236,7 @@ function App() {
         <p>execution time {duration}</p>
       </div>
       {/* VISUALIZE RESULT IN GRAPH */}
-      <GraphShow />
+      <GraphShow node_list={nodes} edge_list={edges} />
     </div>
   );
 }

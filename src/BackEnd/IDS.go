@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
-var (
-	mutex sync.Mutex
-	wg    sync.WaitGroup
-)
+// var (
+// 	mutex sync.Mutex
+// 	wg    sync.WaitGroup
+// )
 
 var visited_node = make(map[string]map[string]bool)
 
@@ -69,7 +68,7 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 	return false
 }
 
-func IDS(start string, end string) [][]string {
+func IDS(start string, end string) *ResponseAPI {
 	var resp ResponseAPI
 	multipath := [][]string{}
 	defer timeTrack(time.Now(), "IDS", &resp.Time)
@@ -107,10 +106,11 @@ func IDS(start string, end string) [][]string {
 		for _, elmt := range saved_path {
 			fmt.Println(elmt)
 		}
-		return multipath
+		return &resp
 	} else {
-		dummy := [][]string{}
-		return dummy
-		// resp.Message = "Path not found"
+		// dummy := [][]string{}
+		// return dummy
+		resp.Message = "Path not found"
 	}
+	return &resp
 }
