@@ -304,28 +304,42 @@ func convertToVisualizer(id *int, depth int, temp_nodes *[]Node, temp_edges *[]E
 		temp_visited[url] = *id
 
 		// create Node
-		fmt.Println("========= NODE CREATED =========")
+		// fmt.Println("========= NODE CREATED =========")
 		*temp_nodes = append(*temp_nodes, Node{Id: *id, Level: depth, Label: url[30:], Color: colorlist[depth]})
 		*id++
 	}
 
-	for key, _ := range graph[url] {
-
+	penentu := false
+	for key := range graph[url] {
+		x := false
 		// create edges
-		fmt.Println("url: ", key)
+		// fmt.Println("url: ", key)
 
 		// time.Sleep(1 * time.Second)
 		// traverse
-		x := convertToVisualizer(id, depth+1, temp_nodes, temp_edges, temp_visited, graph, key, start, maxdepth)
+		x = convertToVisualizer(id, depth+1, temp_nodes, temp_edges, temp_visited, graph, key, start, maxdepth)
 		if x {
 			// create edge
 			var from_int int = temp_visited[key]
 			var to_int int = temp_visited[url]
 			*temp_edges = append(*temp_edges, Edge{From: from_int, To: to_int})
+			penentu = true
+		}
+		if key == start && x {
+			fmt.Println("===================== EDGE TO JOKOWI CREATED +++++++++++++++++")
+			fmt.Println(key)
+			var from_int int = temp_visited[key]
+			var to_int int = temp_visited[url]
+			fmt.Println(key, " -> ", url)
+			fmt.Println(from_int, " -> ", to_int)
 		}
 	}
 
-	return true
+	if penentu {
+		return true
+	}
+
+	return false
 }
 
 func convertToVisualizerHandler(start string, end string, temp map[string]map[string]bool, maxdepth int) ([]Node, []Edge) {
@@ -335,6 +349,10 @@ func convertToVisualizerHandler(start string, end string, temp map[string]map[st
 
 	var temp_visited = make(map[string]int)
 	id := 0
+	temp_visited[start] = id
+	temp_nodes = append(temp_nodes, Node{Id: id, Level: maxdepth + 1, Label: start[30:], Color: colorlist[maxdepth+1]})
+	id++
+
 	convertToVisualizer(&id, 0, &temp_nodes, &temp_edges, temp_visited, temp, end, start, maxdepth)
 
 	fmt.Println(temp_nodes)

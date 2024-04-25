@@ -24,6 +24,8 @@ func randomTime() time.Duration {
 
 func bfsHandler(url string, end string) *ResponseAPI {
 	time_start := time.Now()
+
+	// clear global variable
 	for k := range parent_child_bfs {
 		delete(parent_child_bfs, k)
 	}

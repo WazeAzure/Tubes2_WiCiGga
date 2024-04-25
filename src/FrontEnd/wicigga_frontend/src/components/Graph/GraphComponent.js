@@ -34,6 +34,9 @@ const GraphShow = ({node_list, edge_list}) => {
                 nodeSpacing: 500,
                 treeSpacing: 200,
             }
+        },
+        physics: {
+            enabled: false
         }
     }
 
