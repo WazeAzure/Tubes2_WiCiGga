@@ -68,36 +68,59 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 	return false
 }
 
-func IDS(start string, end string) *ResponseAPI {
+// CONCURRENT
+
+// func IDS(parent_url string, end string) (*ResponseAPI, [][]string) {
+// 	var resp ResponseAPI
+// 	multipath := [][]string{}
+// 	defer timeTrack(time.Now(), "IDS", &resp.Time)
+
+// 	isFound := false
+// 	savedPath := []string{}
+// 	stop := make(chan struct{})
+// 	semaphore := make(chan struct{}, 20)
+// 	var once sync.Once
+
+// 	i := 0
+// 	for !isFound {
+// 		semaphore <- struct{}{}
+// 		go func() {
+// 			defer func() { <-semaphore }()
+// 			if DLS(start, end, i, savedPath, &multipath) {
+// 				once.Do(func() {
+// 					close(stop)
+// 					isFound = true
+// 				})
+// 			}
+// 		}()
+// 		i++
+// 	}
+
+// 	<-stop
+
+// 	resp.Status = true
+// 	resp.Message = "Path Found"
+// 	return &resp, multipath
+// }
+
+//NOT CONCURRENT
+
+func IDS(start string, end string) [][]string {
 	var resp ResponseAPI
 	multipath := [][]string{}
 	defer timeTrack(time.Now(), "IDS", &resp.Time)
 
 	isFound := false
-	// ctx, cancel := context.WithCancel(context.Background())
 	saved_path := []string{}
-	// var semaphore = make(chan struct{}, 10)
 
 	var i int = 0
-	stop := make(chan bool)
-	semaphore := make(chan struct{}, 10)
 	for !isFound {
-		wg.Add(1)
-		semaphore <- struct{}{}
-		go func(depth int) {
-			defer func() { <-semaphore }()
-			select {
-			case <-stop:
-				break
-			default:
-				if DLS(start, end, depth, saved_path, &multipath) {
-					stop <- true
-				}
-			}
-		}(i)
+		if DLS(start, end, i, saved_path, &multipath) {
+			isFound = true
+		}
 		i++
 	}
-	wg.Wait()
+	// DLS(start, end, 4, saved_path, &multipath)
 
 	resp.Status = isFound
 	multipath = append(multipath, saved_path)
@@ -106,11 +129,9 @@ func IDS(start string, end string) *ResponseAPI {
 		for _, elmt := range saved_path {
 			fmt.Println(elmt)
 		}
-		return &resp
+		return multipath
 	} else {
-		// dummy := [][]string{}
-		// return dummy
-		resp.Message = "Path not found"
+		dummy := [][]string{}
+		return dummy
 	}
-	return &resp
 }
