@@ -157,6 +157,14 @@ func sendApi(search string) Page {
 	return ansPage
 }
 
+func handleRedirect(url string) string {
+	var temp Page
+	fmt.Println(url, "===========")
+	temp = sendApi(url[6:])
+
+	return "/wiki/" + strings.ReplaceAll(temp.Title, " ", "_")
+}
+
 // func toFile(res []byte) {
 // 	os.WriteFile("result", res, 0644)
 // }
@@ -189,7 +197,7 @@ func timeTrack(start time.Time, name string, executedTime *time.Duration) {
 func customFileterURL(url string) bool {
 	a := strings.HasPrefix(url, "/wiki/")
 	if a {
-		namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:", "Main_Page", "#"}
+		namespace_list := []string{"User:", "File:", "MediaWiki:", "Template:", "Help:", "Category:", "Special:", "Talk:", "Template_talk:", "Wikipedia:", "Main_Page", "#", "Portal:"}
 
 		for _, elmt := range namespace_list {
 			a = a && !strings.Contains(url, elmt)
@@ -342,20 +350,52 @@ func convertToVisualizer(id *int, depth int, temp_nodes *[]Node, temp_edges *[]E
 	return false
 }
 
-func convertToVisualizerHandler(start string, end string, temp map[string]map[string]bool, maxdepth int) ([]Node, []Edge) {
+func convertToVisualizerIDS(id *int, temp_nodes *[]Node, temp_edges *[]Edge, temp_visited map[string]int, data [][]string, start string) {
+	for idx1 := range data {
+		for idx2 := range data[idx1] {
+			_, err := temp_visited[data[idx1][idx2]]
+
+			if !err {
+				// create node
+
+				temp_visited[data[idx1][idx2]] = *id
+
+				*temp_nodes = append(*temp_nodes, Node{Id: *id, Level: idx2 + 1, Label: data[idx1][idx2][30:], Color: colorlist[idx2+1]})
+				*id++
+			}
+
+			// create edges
+			if idx2 == 0 {
+				*temp_edges = append(*temp_edges, Edge{From: temp_visited[start], To: temp_visited[data[idx1][idx2]]})
+			} else {
+				*temp_edges = append(*temp_edges, Edge{From: temp_visited[data[idx1][idx2-1]], To: temp_visited[data[idx1][idx2]]})
+			}
+		}
+	}
+}
+
+func convertToVisualizerHandler(start string, end string, temp map[string]map[string]bool, maxdepth int, ids_data [][]string, algorithm string) ([]Node, []Edge) {
 
 	var temp_nodes []Node
 	var temp_edges []Edge
 
-	var temp_visited = make(map[string]int)
 	id := 0
+	var temp_visited = make(map[string]int)
 	temp_visited[start] = id
-	temp_nodes = append(temp_nodes, Node{Id: id, Level: maxdepth + 1, Label: start[30:], Color: colorlist[maxdepth+1]})
-	id++
 
-	convertToVisualizer(&id, 0, &temp_nodes, &temp_edges, temp_visited, temp, end, start, maxdepth)
+	if algorithm == "BFS" {
+
+		temp_nodes = append(temp_nodes, Node{Id: id, Level: maxdepth + 1, Label: start[30:], Color: colorlist[maxdepth+1]})
+		id++
+		convertToVisualizer(&id, 0, &temp_nodes, &temp_edges, temp_visited, temp, end, start, maxdepth)
+	} else if algorithm == "IDS" {
+		temp_nodes = append(temp_nodes, Node{Id: id, Level: 0, Label: start[30:], Color: colorlist[0]})
+		id++
+		convertToVisualizerIDS(&id, &temp_nodes, &temp_edges, temp_visited, ids_data, start)
+	}
 
 	fmt.Println(temp_nodes)
+
 	return temp_nodes, temp_edges
 }
 
@@ -369,14 +409,14 @@ func convertToVisualizerHandler(start string, end string, temp map[string]map[st
 
 // 	// start scraping
 // 	// max_depth := 3
-// 	hasil := bfsHandler(page1.Url, page2.Url)
-// 	fmt.Println(hasil.Message)
-// 	fmt.Println(hasil.Status)
-// 	fmt.Println(hasil.Time)
+// 	// hasil := bfsHandler(page1.Url, page2.Url)
+// 	// fmt.Println(hasil.Message)
+// 	// fmt.Println(hasil.Status)
+// 	// fmt.Println(hasil.Time)
 
-// 	fmt.Println(hasil.Nodes)
-// 	fmt.Println(hasil.Edges)
+// 	// fmt.Println(hasil.Nodes)
+// 	// fmt.Println(hasil.Edges)
 
-// 	// x := IDS(page1.Url, page2.Url)
-// 	// fmt.Println(x)
+// 	x := IDShandler(page1.Url, page2.Url)
+// 	fmt.Println(x)
 // }

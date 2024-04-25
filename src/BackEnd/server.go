@@ -71,7 +71,7 @@ func getPath(c *gin.Context) {
 		resp = *bfsHandler(page1.Url, page2.Url)
 	} else if requestData.Method == "IDS" {
 		fmt.Print("OIT INI DARI IDS")
-		resp = *IDS(page1.Url, page2.Url)
+		resp = *IDShandler(page1.Url, page2.Url)
 	}
 
 	c.JSON(http.StatusOK, resp)

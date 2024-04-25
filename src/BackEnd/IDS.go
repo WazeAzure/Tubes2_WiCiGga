@@ -13,13 +13,13 @@ import (
 var visited_node = make(map[string]map[string]bool)
 
 func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]string) bool {
-	defer wg.Done()
+	// wg.Done()
 	if start == end {
 		*ans = append(*ans, saved_path)
-		for _, elmt := range saved_path {
-			fmt.Println(elmt)
-		}
-		fmt.Println(start, "=================================================================================================================================================\n\n\n\n\n\n\n\n\n\n")
+		// for _, elmt := range saved_path {
+		// 	fmt.Println(elmt)
+		// }
+		// fmt.Println(start, "=================================================================================================================================================\n\n\n\n\n\n\n\n\n\n")
 		return true
 	}
 
@@ -57,13 +57,19 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 		}
 	}
 
+	stop := false
 	for key, _ := range url_list {
 		saved_path2 := append(saved_path, key)
 		fmt.Println(key)
-		wg.Add(1)
-		if DLS(key, end, maxdepth-1, saved_path2, ans) {
-			return true
+		// wg.Add(1)
+		x := DLS(key, end, maxdepth-1, saved_path2, ans)
+		if x {
+			stop = true
 		}
+	}
+
+	if stop {
+		return true
 	}
 	return false
 }
@@ -105,20 +111,42 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 
 //NOT CONCURRENT
 
-func IDS(start string, end string) [][]string {
+func IDShandler(start string, end string) *ResponseAPI {
 	var resp ResponseAPI
-	multipath := [][]string{}
+
+	var multipath [][]string
+	multipath = IDS(start, end, &resp)
+
+	// for i := range multipath {
+	// 	fmt.Println(multipath[i])
+	// }
+
+	var temp = make(map[string]map[string]bool)
+
+	resp.Nodes, resp.Edges = convertToVisualizerHandler(start, end, temp, 0, multipath, "IDS")
+
+	return &resp
+}
+
+func IDS(start string, end string, resp *ResponseAPI) [][]string {
 	defer timeTrack(time.Now(), "IDS", &resp.Time)
+
+	multipath := [][]string{}
 
 	isFound := false
 	saved_path := []string{}
 
 	var i int = 0
 	for !isFound {
+		// wg.Add(1)
+		// fmt.Println("=============================================================")
+		// fmt.Println("|                         CURRENT DEPTH ", i, "              |")
+		// fmt.Println("=============================================================")
 		if DLS(start, end, i, saved_path, &multipath) {
 			isFound = true
 		}
 		i++
+		// time.Sleep(1 * time.Second)
 	}
 	// DLS(start, end, 4, saved_path, &multipath)
 
