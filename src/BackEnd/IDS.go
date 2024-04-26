@@ -58,7 +58,7 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 	}
 
 	stop := false
-	semaphore := make(chan struct{}, 20)
+	semaphore := make(chan struct{}, 3)
 	for key, _ := range url_list {
 		semaphore <- struct{}{}
 		saved_path2 := append(saved_path, key)
