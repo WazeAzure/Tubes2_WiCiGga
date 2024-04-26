@@ -8,6 +8,10 @@ function App() {
   const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
 
+  //Image URls
+  const [imageURLs1, setImageURLs1] = useState([]);
+  const [imageURLs2, setImageURLs2] = useState([]);
+
   //Search bar value
   const [value1, setValue1] = useState("");
   const [value2, setValue2] = useState("");
@@ -58,6 +62,82 @@ function App() {
     }
   }
 
+  // const getImage = async (item, id) => {
+  //   let url = "";
+  //   if (item.length !== "") {
+  //     try {
+  //       const response = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&origin=*&pithumbsize=100&pageids=${id}`);
+  //       const jsonDat = await response.json();
+  //       const pages = jsonDat.query?.pages; // Optional chaining to prevent errors
+  //       const cont = pages ? pages[id] : null;
+  //       if (cont && cont.thumbnail) {
+  //         url = cont.thumbnail.source;
+  //         console.log(url);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching image:", error);
+  //     }
+  //   }
+  //   return url;
+  // };
+
+  useEffect(() => {
+    if (data1.length !== 0) {
+      Promise.all(data1.map((item) =>
+        fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&origin=*&pithumbsize=100&pageids=${item.pageid}`)
+          .then((res) => res.json())
+          .then((jsonDat) => jsonDat.query)
+          .then((queryResult) => {
+            // Extract the image URL from the query result and return it
+            const ImageURL = queryResult.pages[item.pageid]?.thumbnail?.source;
+
+            return ImageURL ? ImageURL : '';
+          })
+      ))
+        .then((imageURLs) => {
+          // Set the image URLs using setImageURLs1
+          setImageURLs1(imageURLs);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    }
+  }, [data1]);
+
+  useEffect(() => {
+    if (data2.length !== 0) {
+      Promise.all(data2.map((item) =>
+        fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&origin=*&pithumbsize=100&pageids=${item.pageid}`)
+          .then((res) => res.json())
+          .then((jsonDat) => jsonDat.query)
+          .then((queryResult) => {
+            // Extract the image URL from the query result and return it
+            const ImageURL = queryResult.pages[item.pageid]?.thumbnail?.source;
+
+            return ImageURL ? ImageURL : '';
+          })
+      ))
+        .then((imageURLs) => {
+          // Set the image URLs using setImageURLs1
+          setImageURLs2(imageURLs);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    }
+  }, [data2]);
+
+  // Fetch data for image search thumbnail
+  // useEffect((id) => {
+  //   if (data1.length !== 0) {
+  //     fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&origin=*&pithumbsize=100&pageids=` + id)
+  //       .then((res) => {
+  //         return res.json();
+  //       }).then
+  //   }
+  // }, [])
+
+
   useEffect(() => {
     setDataComplete(data1.length !== 0 && data2.length !== 0 && value1 !== '' && value2 !== '');
   }, [data1, data2, value1, value2]);
@@ -76,7 +156,7 @@ function App() {
           return jsonDat.query;
         }).then((que) => {
           // console.log(que.search.map(item => item.title));
-          setData1(que.search.map(item => item.title));;
+          setData1(que.search.map(item => ({ title: item.title, pageid: item.pageid })));
         });
     }
   }, [value1])
@@ -91,10 +171,11 @@ function App() {
           return jsonDat.query;
         }).then((que) => {
           // console.log(que.search.map(item => item.title));
-          setData2(que.search.map(item => item.title));;
+          setData2(que.search.map(item => ({ title: item.title, pageid: item.pageid })));
         });
     }
   }, [value2])
+
 
   // fetch api to backend , post data to API
 
@@ -143,7 +224,7 @@ function App() {
     }
     if (dataComplete) {
 
-      console.log(dataToSend)
+      // console.log(dataToSend)
       sendData(dataToSend)
     }
   }
@@ -161,23 +242,24 @@ function App() {
 
         <div className='search-left'>
           <div className='search-bar-container'>
-            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} />
+            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} onBlur={() => setSelected1(true)} onFocus={() => setSelected1(false)} />
               : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value1} onChange={onChange1} />}
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data1.some(item => {
               const searchTerm = value1.toLowerCase();
               return !selected1 && searchTerm;
-            }) ? '' : 'dummy')}>
-              {data1.filter(item => {
-                const searchTerm = value1.toLowerCase();
-
-                // console.log(selected2)
-
-                return !selected1 && searchTerm;
-              }).slice(0, 5)
-                .map((item) => (
-                  <li className="search-result" onClick={() => { setValue1(item); setSelected1(true); }}>{item}</li>
+            }) ? '' : '-dummy')}>
+              {data1.slice(0, 5)
+                .map((item, index) => (
+                  <li key={index} className="search-result" onClick={() => { setValue1(item); setSelected1(true); }}>
+                    <div className='img-box'>
+                      <div className='image-result'>
+                        <img src={imageURLs1[index]} className='image'></img>
+                      </div>
+                    </div>
+                    <div className='result-box'>{item.title}</div>
+                  </li>
                 ))
               }
             </div>
@@ -188,23 +270,24 @@ function App() {
 
         <div className='search-right'>
           <div className='search-bar-container'>
-            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} />
+            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} onBlur={() => setSelected2(true)} onFocus={() => setSelected2(false)} />
               : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value2} onChange={onChange2} />}
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data2.some(item => {
               const searchTerm = value2.toLowerCase();
               return !selected2 && searchTerm;
-            }) ? '' : 'dummy')}>
-              {data2.filter(item => {
-                const searchTerm = value2.toLowerCase();
-
-                // console.log(selected2)
-
-                return !selected2 && searchTerm;
-              }).slice(0, 5)
-                .map((item) => (
-                  <li className="search-result" onClick={() => { setValue2(item); setSelected2(true); }}>{item}</li>
+            }) ? '' : '-dummy')}>
+              {data2.slice(0, 5)
+                .map((item, index) => (
+                  <li key={index} className="search-result" onClick={() => { setValue2(item); setSelected2(true); }}>
+                    <div className='img-box'>
+                      <div className='image-result'>
+                        <img src={imageURLs2[index]} className='image'></img>
+                      </div>
+                    </div>
+                    <div className='result-box'>{item.title}</div>
+                  </li>
                 ))
               }
             </div>
@@ -221,6 +304,7 @@ function App() {
 
       {/* SHOW RESULT */}
       <div>
+        {/* {pathFound? <p>{message}</p>:<p>Path NOT Founded</p>} */}
         {
           pathFound &&
           <>
