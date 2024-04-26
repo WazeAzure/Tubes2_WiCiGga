@@ -1,10 +1,12 @@
 package main
 
 import (
+	"backend/algorithm"
+	"backend/scraper"
+	"backend/util"
 	"fmt"
 	"net/http"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,16 +24,39 @@ type pathJSON struct {
 +------------------------------------------+
 */
 
+// func main() {
+// 	router := gin.Default()
+
+// 	router.Use(cors.Default())
+
+// 	// Define API endpoints
+// 	router.POST("/api", getPath)
+
+// 	// Start the server
+// 	router.Run(":4000")
+// }
+
 func main() {
-	router := gin.Default()
+	page1 := scraper.SendApi("Jokowi")
+	page2 := scraper.SendApi("Central Java")
 
-	router.Use(cors.Default())
+	// 	// get initial value
+	// 	fmt.Println(PrettyPrint(page1))
+	// 	fmt.Println(PrettyPrint(page2))
 
-	// Define API endpoints
-	router.POST("/api", getPath)
+	// 	// start scraping
+	// 	// max_depth := 3
+	hasil := algorithm.BFShandler(page1.Url, page2.Url)
+	// hasil2 := bfsHandler(page1.Url, page2.Url)
+	// 	// fmt.Println(hasil.Message)
+	// 	// fmt.Println(hasil.Status)
+	fmt.Println(hasil.Time)
 
-	// Start the server
-	router.Run(":4000")
+	// 	// fmt.Println(hasil.Nodes)
+	// 	// fmt.Println(hasil.Edges)
+
+	// x := IDShandler(page1.Url, page2.Url)
+	// fmt.Println(x.Time)
 }
 
 /*
@@ -50,8 +75,8 @@ func getPath(c *gin.Context) {
 		return
 	}
 
-	page1 := sendApi(requestData.Start)
-	page2 := sendApi(requestData.End)
+	page1 := scraper.SendApi(requestData.Start)
+	page2 := scraper.SendApi(requestData.End)
 
 	if !page1.Status {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "page with start value title not found"})
@@ -64,14 +89,14 @@ func getPath(c *gin.Context) {
 	}
 
 	// clean input
-	var resp ResponseAPI
+	var resp util.ResponseAPI
 
 	fmt.Print(requestData.Method)
 	if requestData.Method == "BFS" {
-		resp = *bfsHandler(page1.Url, page2.Url)
+		resp = *algorithm.BFShandler(page1.Url, page2.Url)
 	} else if requestData.Method == "IDS" {
 		fmt.Print("OIT INI DARI IDS")
-		resp = *IDShandler(page1.Url, page2.Url)
+		resp = *algorithm.IDShandler(page1.Url, page2.Url)
 	}
 
 	c.JSON(http.StatusOK, resp)

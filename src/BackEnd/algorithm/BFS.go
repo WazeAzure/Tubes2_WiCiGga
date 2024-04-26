@@ -1,8 +1,9 @@
-package main
+package algorithm
 
 import (
+	"backend/scraper"
+	"backend/util"
 	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 )
@@ -12,30 +13,30 @@ var parent_child_bfs = make(map[string]map[string]bool)
 var bfs_slave int = 20
 var semaphore = make(chan struct{}, bfs_slave)
 var (
-	url_queue   []string
-	mutex       sync.Mutex
-	wg          sync.WaitGroup
-	current_url string
+	// url_queue   []string
+	mutex sync.Mutex
+	wg    sync.WaitGroup
+	// current_url string
 )
 
-func randomTime() time.Duration {
-	return 50 + time.Duration(rand.Intn(250))
-}
+// func randomTime() time.Duration {
+// 	return 50 + time.Duration(rand.Intn(250))
+// }
 
-func bfsHandler(url string, end string) *ResponseAPI {
+func BFShandler(url string, end string) *util.ResponseAPI {
 	time_start := time.Now()
 
 	// clear global variable
 	for k := range parent_child_bfs {
 		delete(parent_child_bfs, k)
 	}
-	var resp ResponseAPI
+	var resp util.ResponseAPI
 
 	var current_url = []string{url}
 	n := 0
 	x := BFS(semaphore, current_url, end, &resp, &n)
 
-	timeTrack(time_start, "scrapWeb", &resp.Time)
+	util.TimeTrack(time_start, "scrapWeb", &resp.Time)
 	fmt.Println("degree dari path bernilai := ", n+1, x)
 
 	time.Sleep(1 * time.Second)
@@ -53,12 +54,12 @@ func bfsHandler(url string, end string) *ResponseAPI {
 		}
 
 		var zombie [][]string
-		resp.Nodes, resp.Edges = convertToVisualizerHandler(url, end, parent_child_bfs_temp, n, zombie, "BFS")
+		resp.Nodes, resp.Edges = util.ConvertToVisualizerHandler(url, end, parent_child_bfs_temp, n, zombie, "BFS")
 	}
 	return &resp
 }
 
-func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *ResponseAPI, depth *int) bool {
+func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int) bool {
 	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
 	stop := false
@@ -71,7 +72,7 @@ func BFS(semaphore chan struct{}, current_url_list []string, end string, resp *R
 			defer func() { <-semaphore }()
 			defer wg.Done()
 
-			link_res := scrapWeb(elmt_conc)
+			link_res := scraper.ScrapWeb(elmt_conc)
 			for _, elmt2 := range link_res {
 				mutex.Lock()
 				_, err1 := parent_child_bfs[elmt2]

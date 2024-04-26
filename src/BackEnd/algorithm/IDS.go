@@ -1,15 +1,17 @@
-package main
+package algorithm
 
 import (
+	"backend/scraper"
+	"backend/util"
 	"fmt"
 	"sync"
 	"time"
 )
 
-var (
-	mutex sync.Mutex
-	wg    sync.WaitGroup
-)
+// var (
+// 	mutex sync.Mutex
+// 	wg    sync.WaitGroup
+// )
 
 var visited_node = make(map[string]map[string]bool)
 
@@ -31,35 +33,35 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 	var url_scrap []string
 	var url_list = make(map[string]bool)
 
-	mutex.Lock()
+	// mutex.Lock()
 	url_visited, exist := visited_node[start]
-	mutex.Unlock()
+	// mutex.Unlock()
 	if !exist {
-		url_scrap = scrapWeb(start)
-		mutex.Lock()
+		url_scrap = scraper.ScrapWeb(start)
+		// mutex.Lock()
 		visited_node[start] = make(map[string]bool)
-		mutex.Unlock()
+		// mutex.Unlock()
 	} else {
 		url_list = url_visited
 	}
 
 	for _, elmt := range url_scrap {
-		mutex.Lock()
+		// mutex.Lock()
 		_, err := visited_node[elmt]
-		mutex.Unlock()
+		// mutex.Unlock()
 
 		if !err {
 			// kalau ga ada di map visited_node
-			mutex.Lock()
+			// mutex.Lock()
 			visited_node[start][elmt] = true
 			url_list[elmt] = true
-			mutex.Unlock()
+			// mutex.Unlock()
 		}
 	}
 
 	stop := false
 	// semaphore := make(chan struct{}, 1)
-	for key, _ := range url_list {
+	for key := range url_list {
 		// semaphore <- struct{}{}
 		saved_path2 := append(saved_path, key)
 		// fmt.Println(key, maxdepth)
@@ -114,11 +116,10 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 
 //NOT CONCURRENT
 
-func IDShandler(start string, end string) *ResponseAPI {
-	var resp ResponseAPI
+func IDShandler(start string, end string) *util.ResponseAPI {
+	var resp util.ResponseAPI
 
-	var multipath [][]string
-	multipath = IDS(start, end, &resp)
+	var multipath [][]string = IDS(start, end, &resp)
 
 	// for i := range multipath {
 	// 	fmt.Println(multipath[i])
@@ -126,13 +127,13 @@ func IDShandler(start string, end string) *ResponseAPI {
 
 	var temp = make(map[string]map[string]bool)
 
-	resp.Nodes, resp.Edges = convertToVisualizerHandler(start, end, temp, 0, multipath, "IDS")
+	resp.Nodes, resp.Edges = util.ConvertToVisualizerHandler(start, end, temp, 0, multipath, "IDS")
 
 	return &resp
 }
 
-func IDS(start string, end string, resp *ResponseAPI) [][]string {
-	defer timeTrack(time.Now(), "IDS", &resp.Time)
+func IDS(start string, end string, resp *util.ResponseAPI) [][]string {
+	defer util.TimeTrack(time.Now(), "IDS", &resp.Time)
 
 	multipath := [][]string{}
 
@@ -149,7 +150,7 @@ func IDS(start string, end string, resp *ResponseAPI) [][]string {
 		if DLS(start, end, i, saved_path, &multipath, &wait) {
 			isFound = true
 		}
-		wait.Wait()
+		// wait.Wait()
 		i++
 		// time.Sleep(1 * time.Second)
 	}
