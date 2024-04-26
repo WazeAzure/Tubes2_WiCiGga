@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -12,8 +13,7 @@ import (
 
 var visited_node = make(map[string]map[string]bool)
 
-func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]string) bool {
-	// wg.Done()
+func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]string, wg *sync.WaitGroup) bool {
 	if start == end {
 		*ans = append(*ans, saved_path)
 		// for _, elmt := range saved_path {
@@ -58,20 +58,23 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 	}
 
 	stop := false
+	semaphore := make(chan struct{}, 20)
 	for key, _ := range url_list {
+		semaphore <- struct{}{}
 		saved_path2 := append(saved_path, key)
-		fmt.Println(key)
-		// wg.Add(1)
-		x := DLS(key, end, maxdepth-1, saved_path2, ans)
-		if x {
-			stop = true
-		}
+		fmt.Println(key, maxdepth)
+		wg.Add(1)
+		go func(key_conc string) {
+			defer func() { <-semaphore }()
+			defer wg.Done()
+			x := DLS(key_conc, end, maxdepth-1, saved_path2, ans, wg)
+			if x {
+				stop = true
+			}
+		}(key)
 	}
 
-	if stop {
-		return true
-	}
-	return false
+	return stop
 }
 
 // CONCURRENT
@@ -137,14 +140,16 @@ func IDS(start string, end string, resp *ResponseAPI) [][]string {
 	saved_path := []string{}
 
 	var i int = 0
+	var wait sync.WaitGroup
 	for !isFound {
 		// wg.Add(1)
 		// fmt.Println("=============================================================")
 		// fmt.Println("|                         CURRENT DEPTH ", i, "              |")
 		// fmt.Println("=============================================================")
-		if DLS(start, end, i, saved_path, &multipath) {
+		if DLS(start, end, i, saved_path, &multipath, &wait) {
 			isFound = true
 		}
+		wait.Wait()
 		i++
 		// time.Sleep(1 * time.Second)
 	}

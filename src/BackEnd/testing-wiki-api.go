@@ -461,8 +461,8 @@ func convertToVisualizerHandler(start string, end string, temp map[string]map[st
 }
 
 // func main() {
-// 	page1 := sendApi("Jokowi")
-// 	page2 := sendApi("Central Java")
+// page1 := sendApi("Jokowi")
+// page2 := sendApi("Cadmium")
 
 // 	// get initial value
 // 	fmt.Println(PrettyPrint(page1))
@@ -478,6 +478,6 @@ func convertToVisualizerHandler(start string, end string, temp map[string]map[st
 // 	// fmt.Println(hasil.Nodes)
 // 	// fmt.Println(hasil.Edges)
 
-// 	x := IDShandler(page1.Url, page2.Url)
-// 	fmt.Println(x)
+// x := IDShandler(page1.Url, page2.Url)
+// fmt.Println(x.Time)
 // }
