@@ -9,7 +9,7 @@ import (
 
 var visited_bfs = make(map[string]bool)
 var parent_child_bfs = make(map[string]map[string]bool)
-var bfs_slave int = 100
+var bfs_slave int = 20
 var semaphore = make(chan struct{}, bfs_slave)
 var (
 	url_queue   []string

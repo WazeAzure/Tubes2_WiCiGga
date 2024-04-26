@@ -167,12 +167,11 @@ function App() {
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data1.some(item => {
               const searchTerm = value1.toLowerCase();
-              const pathString = item.toLowerCase();
               return !selected1 && searchTerm;
             }) ? '' : 'dummy')}>
               {data1.filter(item => {
                 const searchTerm = value1.toLowerCase();
-                const pathString = item.toLowerCase();
+
                 // console.log(selected2)
 
                 return !selected1 && searchTerm;
@@ -195,12 +194,11 @@ function App() {
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data2.some(item => {
               const searchTerm = value2.toLowerCase();
-              const pathString = item.toLowerCase();
               return !selected2 && searchTerm;
             }) ? '' : 'dummy')}>
               {data2.filter(item => {
                 const searchTerm = value2.toLowerCase();
-                const pathString = item.toLowerCase();
+
                 // console.log(selected2)
 
                 return !selected2 && searchTerm;

@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-// var (
-// 	mutex sync.Mutex
-// 	wg    sync.WaitGroup
-// )
+var (
+	mutex sync.Mutex
+	wg    sync.WaitGroup
+)
 
 var visited_node = make(map[string]map[string]bool)
 
@@ -58,20 +58,20 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 	}
 
 	stop := false
-	semaphore := make(chan struct{}, 3)
+	// semaphore := make(chan struct{}, 1)
 	for key, _ := range url_list {
-		semaphore <- struct{}{}
+		// semaphore <- struct{}{}
 		saved_path2 := append(saved_path, key)
-		fmt.Println(key, maxdepth)
-		wg.Add(1)
-		go func(key_conc string) {
-			defer func() { <-semaphore }()
-			defer wg.Done()
-			x := DLS(key_conc, end, maxdepth-1, saved_path2, ans, wg)
-			if x {
-				stop = true
-			}
-		}(key)
+		// fmt.Println(key, maxdepth)
+		// wg.Add(1)
+		// go func(key_conc string) {
+		// 	defer func() { <-semaphore }()
+		// 	defer wg.Done()
+		x := DLS(key, end, maxdepth-1, saved_path2, ans, wg)
+		if x {
+			stop = true
+		}
+		// }(key)
 	}
 
 	return stop

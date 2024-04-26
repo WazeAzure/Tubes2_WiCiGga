@@ -298,7 +298,7 @@ func extractLinks(n *html.Node, links *[]string, wg *sync.WaitGroup) {
 		go func(c_conc *html.Node) {
 			defer func() { <-semaphore }()
 			defer wg.Done()
-			extractLinks(c_conc, links, wg)
+			extractLinks(c, links, wg)
 		}(c)
 	}
 }
@@ -488,23 +488,24 @@ func convertToVisualizerHandler(start string, end string, temp map[string]map[st
 }
 
 // func main() {
-// page1 := sendApi("Jokowi")
-// page2 := sendApi("Cadmium")
+// 	page1 := sendApi("Jokowi")
+// 	page2 := sendApi("Central Java")
 
-// 	// get initial value
-// 	fmt.Println(PrettyPrint(page1))
-// 	fmt.Println(PrettyPrint(page2))
+// 	// 	// get initial value
+// 	// 	fmt.Println(PrettyPrint(page1))
+// 	// 	fmt.Println(PrettyPrint(page2))
 
-// 	// start scraping
-// 	// max_depth := 3
-// 	// hasil := bfsHandler(page1.Url, page2.Url)
-// 	// fmt.Println(hasil.Message)
-// 	// fmt.Println(hasil.Status)
-// 	// fmt.Println(hasil.Time)
+// 	// 	// start scraping
+// 	// 	// max_depth := 3
+// 	hasil := bfsHandler(page1.Url, page2.Url)
+// 	hasil2 := bfsHandler(page1.Url, page2.Url)
+// 	// 	// fmt.Println(hasil.Message)
+// 	// 	// fmt.Println(hasil.Status)
+// 	fmt.Println(hasil.Time, hasil2.Time)
 
-// 	// fmt.Println(hasil.Nodes)
-// 	// fmt.Println(hasil.Edges)
+// 	// 	// fmt.Println(hasil.Nodes)
+// 	// 	// fmt.Println(hasil.Edges)
 
-// x := IDShandler(page1.Url, page2.Url)
-// fmt.Println(x.Time)
+// 	// x := IDShandler(page1.Url, page2.Url)
+// 	// fmt.Println(x.Time)
 // }
