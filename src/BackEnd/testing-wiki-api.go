@@ -157,12 +157,59 @@ func sendApi(search string) Page {
 	return ansPage
 }
 
-func handleRedirect(url string) string {
-	var temp Page
-	fmt.Println(url, "===========")
-	temp = sendApi(url[6:])
+func extractTitle(n *html.Node) string {
+	if n.Type == html.ElementNode && n.Data == "title" {
+		fmt.Println("TITLE FOUND ================")
+		// If the node is a <title> element, return its text content
+		return strings.TrimSpace(textContent(n))
+	}
 
-	return "/wiki/" + strings.ReplaceAll(temp.Title, " ", "_")
+	// Recursively search for <title> element in child nodes
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		title := extractTitle(c)
+		if title != "" {
+			return title
+		}
+	}
+	return ""
+}
+
+func textContent(n *html.Node) string {
+	var text string
+	if n.Type == html.TextNode {
+		text = n.Data
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		text += textContent(c)
+	}
+	return text
+}
+
+func handleRedirect(url string) string {
+	webUrl := "https://en.wikipedia.org/wiki/"
+	resp, err := http.Get(webUrl + url)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal("Failed to read body response", err)
+	}
+
+	doc, err := html.Parse(bytes.NewReader(body))
+	if err != nil {
+		log.Fatal("Error parsing HTML", err)
+	}
+
+	title := extractTitle(doc)
+
+	// var temp Page
+	// fmt.Println(url, "===========")
+	// temp = sendApi(url[6:])
+
+	return "/wiki/" + strings.ReplaceAll(title, " ", "_")
 }
 
 // func toFile(res []byte) {
@@ -209,13 +256,27 @@ func customFileterURL(url string) bool {
 // Function to extract links from a node
 func extractLinks(n *html.Node, links *[]string) {
 	if n.Type == html.ElementNode && n.Data == "a" {
+		url := ""
+		isTrue := false
 		for _, attr := range n.Attr {
 			if attr.Key == "href" {
 				if customFileterURL(attr.Val) {
-					*links = append(*links, "https://en.wikipedia.org"+attr.Val)
+					url = attr.Val
+					isTrue = true
 				}
 			}
 		}
+		if isTrue {
+			for _, attr := range n.Attr {
+				if attr.Key == "class" {
+					if attr.Val == "mw-redirect" {
+						url = handleRedirect(url)
+					}
+				}
+			}
+		}
+
+		*links = append(*links, "https://en.wikipedia.org"+url)
 	}
 
 	// Recursively extract links from child nodes
