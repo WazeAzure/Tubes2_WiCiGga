@@ -51,6 +51,11 @@
 }
 
 .search-result {
+  display: flex;
+  flex-direction: row;
+  justify-content: baseline;
+  align-items: center;
+  column-gap: 10px;
   padding: 10px 10px;
   border-bottom: 2px solid;
   font-size: 20px;
@@ -78,7 +83,7 @@
 
 .box-1 {
   height: 400px;
-  width: 400px;
+  width: 600px;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -124,6 +129,64 @@
 }
 
 .button-search:hover {
+  color: white;
+  border-color: black;
+}
+
+.img-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  border-width: 0.5px;
+  border: solid;
+}
+
+.result-box {
+  max-width: 80%;
+}
+
+.image-result {
+  position: relative;
+  max-width: 50px;
+  max-height: 50px;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  background-color: #0AF;
+  border: solid 1px;
+}
+
+.dropdown-dummy {
+  display: none;
+}
+
+.box-2 {
+  display: flex;
+  border: solid 3px;
+  border-radius: 8px;
+  height: 65px;
+  width: 180px;
+  background-color: #0AF;
+  cursor: pointer;
+  font-size: 25px;
+  font-weight: 900;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  transition: 0.3s;
+}
+
+.box-2:hover {
   color: white;
   border-color: black;
 }
