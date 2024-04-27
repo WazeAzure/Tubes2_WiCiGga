@@ -50,17 +50,20 @@ func BFShandler(url string, end string, ans_type string) *util.ResponseAPI {
 	n := 0
 	var x bool
 
+	articleHit := 0
 	if ans_type == "multi" {
-		x = BFS(&semaphore, current_url, end, &resp, &n)
+		x = BFS(&semaphore, current_url, end, &resp, &n, &articleHit)
 		time.Sleep(1 * time.Second)
 	} else if ans_type == "single" {
 		// wg.Add(1)
-		BFSSingle(&semaphore, current_url, end, &resp, &n)
+		BFSSingle(&semaphore, current_url, end, &resp, &n, &articleHit)
 		x = true
 	}
 
 	util.TimeTrack(time_start, "scrapWeb", &resp.Time)
 	fmt.Println("degree dari path bernilai := ", n+1, x)
+	resp.Degree = n + 1
+	resp.Hit = articleHit
 
 	// path cleaning
 	if x {
@@ -81,7 +84,7 @@ func BFShandler(url string, end string, ans_type string) *util.ResponseAPI {
 }
 
 // Function for BFS Recursion
-func BFS(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int) bool {
+func BFS(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int, articleHit *int) bool {
 
 	fmt.Println("Current Depth ----- ", *depth, " ----")
 	// semaphore := make(chan struct{}, bfs_slave)
@@ -89,6 +92,7 @@ func BFS(semaphore *chan struct{}, current_url_list []string, end string, resp *
 	stop := false
 
 	for _, elmt := range current_url_list {
+		*articleHit++
 		wg.Add(1)
 		*semaphore <- struct{}{}
 		// time.Sleep(50 * time.Millisecond)
@@ -147,10 +151,10 @@ func BFS(semaphore *chan struct{}, current_url_list []string, end string, resp *
 		return stop
 	}
 	*depth = *depth + 1
-	return BFS(semaphore, temp_url_list, end, resp, depth)
+	return BFS(semaphore, temp_url_list, end, resp, depth, articleHit)
 }
 
-func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int) {
+func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int, articleHit *int) {
 	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
 	terminate := make(chan struct{})
@@ -158,6 +162,7 @@ func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, 
 	var once sync.Once
 free:
 	for _, elmt := range current_url_list {
+		*articleHit++
 		wg.Add(1)
 		*semaphore <- struct{}{}
 		// time.Sleep(50 * time.Millisecond)
@@ -236,5 +241,5 @@ free:
 	}
 
 	*depth = *depth + 1
-	BFSSingle(semaphore, temp_url_list, end, resp, depth)
+	BFSSingle(semaphore, temp_url_list, end, resp, depth, articleHit)
 }

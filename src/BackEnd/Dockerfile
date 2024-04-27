@@ -1,13 +1,17 @@
 FROM golang:latest
 
-RUN mkdir -p app/
+WORKDIR /usr/local/go/src
 
-WORKDIR /app
+RUN mkdir -p ./backend
+COPY go.mod ./
+COPY go.sum ./
+COPY server.go  ./
+COPY algorithm  ./backend
+COPY caching  ./backend
+COPY scraper  ./backend
+COPY util  ./backend
 
+RUN go mod tidy
+RUN go mod vendor
 
-RUN go mod init backend/web-api-gin
-COPY . ./
-
-RUN GOPROXY="https://goproxy.io" go mod tidy
-
-RUN go build -o server server.go
+RUN go run server.go

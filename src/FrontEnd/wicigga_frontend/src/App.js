@@ -40,6 +40,10 @@ function App() {
   const [pathFound, setPathFound] = useState(false)
   // pesan jika path tidak ditemukan / error lainnya
   const [message, setMessage] = useState("")
+  // degree of separation
+  const [degree, setDegree] = useState(0)
+  // hit article
+  const [articleHit, setArticleHit] = useState(0)
 
   //Search input handler
   const onChange1 = (event) => {
@@ -206,6 +210,8 @@ function App() {
           setPathFound(data.status);
           setEdges(data.edges);
           setNodes(data.nodes);
+          setArticleHit(data.hit);
+          setDegree(data.degree);
 
           console.log(data)
 
@@ -323,6 +329,8 @@ function App() {
           <p>Path NOT Founded</p>
         }
         <p>execution time {duration}</p>
+        <p>answer degree {degree}</p>
+        <p>article hit {articleHit}</p>
       </div>
       {/* VISUALIZE RESULT IN GRAPH */}
       <GraphShow node_list={nodes} edge_list={edges} />

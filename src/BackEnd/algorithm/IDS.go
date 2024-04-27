@@ -20,6 +20,7 @@ func IDS(start string, end string, resp *util.ResponseAPI) [][]string {
 	isFound := false
 	saved_path := []string{}
 
+	articleHit := 0
 	var i int = 0
 	var wait sync.WaitGroup
 	for !isFound {
@@ -27,13 +28,16 @@ func IDS(start string, end string, resp *util.ResponseAPI) [][]string {
 		fmt.Println("=============================================================")
 		fmt.Println("|                         CURRENT DEPTH ", i, "              |")
 		fmt.Println("=============================================================")
-		if DLS(start, end, i, saved_path, &multipath, &wait) {
+		if DLS(start, end, i, saved_path, &multipath, &wait, &articleHit) {
 			isFound = true
 		}
 		wait.Wait()
 		time.Sleep(1 * time.Second)
 		i++
 	}
+
+	resp.Degree = i - 1
+	resp.Hit = articleHit
 	// DLS(start, end, 4, saved_path, &multipath)
 
 	resp.Status = isFound
@@ -50,7 +54,8 @@ func IDS(start string, end string, resp *util.ResponseAPI) [][]string {
 	}
 }
 
-func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]string, wg *sync.WaitGroup) bool {
+func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]string, wg *sync.WaitGroup, articleHit *int) bool {
+	*articleHit++
 	if start == end {
 		fmt.Println("\n\n\nFOUND\n\n\n")
 		*ans = append(*ans, saved_path)
@@ -111,7 +116,7 @@ func DLS(start string, end string, maxdepth int, saved_path []string, ans *[][]s
 		go func(key_conc string) {
 			defer func() { <-semaphore }()
 			defer (*wg).Done()
-			x := DLS(key_conc, end, maxdepth-1, saved_path2, ans, wg)
+			x := DLS(key_conc, end, maxdepth-1, saved_path2, ans, wg, articleHit)
 			if x {
 				stop = true
 			}
@@ -130,17 +135,21 @@ func IDSSingle(start string, end string, resp *util.ResponseAPI) [][]string {
 	saved_path := []string{}
 
 	isFound := false
+
+	articleHit := 0
 	// ctx, cancel := context.WithCancel(context.Background())
 
 	// var semaphore = make(chan struct{}, 10)
 
 	var i int = 0
 	for !isFound {
-		if DLSSingle(start, end, i, saved_path, &multipath) {
+		if DLSSingle(start, end, i, saved_path, &multipath, &articleHit) {
 			isFound = true
 		}
 		i++
 	}
+	resp.Degree = i - 1
+	resp.Hit = articleHit
 
 	resp.Status = isFound
 	multipath = append(multipath, saved_path)
@@ -156,7 +165,8 @@ func IDSSingle(start string, end string, resp *util.ResponseAPI) [][]string {
 	}
 }
 
-func DLSSingle(start string, end string, maxdepth int, saved_path []string, ans *[][]string) bool {
+func DLSSingle(start string, end string, maxdepth int, saved_path []string, ans *[][]string, articleHit *int) bool {
+	*articleHit++
 	if start == end {
 		*ans = append(*ans, saved_path)
 		// for _, elmt := range saved_path {
@@ -210,7 +220,7 @@ func DLSSingle(start string, end string, maxdepth int, saved_path []string, ans 
 
 		saved_path2 := append(saved_path, key)
 		fmt.Println(key, maxdepth)
-		if DLSSingle(key, end, maxdepth-1, saved_path2, ans) {
+		if DLSSingle(key, end, maxdepth-1, saved_path2, ans, articleHit) {
 			return true
 		}
 	}

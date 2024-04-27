@@ -26,6 +26,8 @@ type ResponseAPI struct {
 	Status  bool          `json:"status"`
 	Message string        `json:"message"`
 	Time    time.Duration `json:"time"`
+	Hit     int           `json:"hit"`
+	Degree  int           `json:"degree"`
 }
 
 type Page struct {
