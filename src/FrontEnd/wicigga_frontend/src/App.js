@@ -311,7 +311,7 @@ function App() {
         <div className='button-mode' onClick={() => setButtonState(!buttonState)}>
           {buttonState ? <p>IDS</p> : <p>BFS</p>}
         </div>
-        {dataComplete ? <div className='button-search' onClick={() => onSearch()}>Search</div>
+        {dataComplete ? <div className='button-search' onClick={() => { onSearch(); console.log("Searching..") }}>Search</div>
           : <div className='button-search' onClick={() => turnFormRed(data1, data2)}>Search</div>}
       </div>
 
@@ -319,7 +319,7 @@ function App() {
       <div className='result-section'>
         {/* {pathFound? <p>{message}</p>:<p>Path NOT Founded</p>} */}
         {pathFound ? <>
-          <p className='result-tag'>execution time : {duration / 1000000000}s</p>
+          <p className='result-tag'>execution time : {duration / 1000000}ms</p>
           <p className='result-tag'>answer degree : {degree}</p>
           <p className='result-tag'>article hit : {articleHit} article(s)</p>
         </> : <><p className='result-tag' >Path NOT Found</p></>}
