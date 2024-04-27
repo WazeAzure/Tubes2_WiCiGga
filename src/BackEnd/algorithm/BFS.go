@@ -53,6 +53,7 @@ func BFShandler(url string, end string, ans_type string) *util.ResponseAPI {
 	if ans_type == "multi" {
 		x = BFS(&semaphore, current_url, end, &resp, &n)
 	} else if ans_type == "single" {
+		// wg.Add(1)
 		x = BFSSingle(&semaphore, current_url, end, &resp, &n)
 	}
 
@@ -155,20 +156,23 @@ func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, 
 
 	for _, elmt := range current_url_list {
 		*semaphore <- struct{}{}
+		// wg.Add(1)
 		// time.Sleep(50 * time.Millisecond)
 		go func(elmt_conc string) {
 			defer func() { <-*semaphore }()
-			defer wg.Done()
+			// defer wg.Done()
 
 			var link_res []string
 			if caching.CheckCacheFile(elmt_conc) {
-				link_res = scraper.ScrapWeb(elmt_conc)
-				caching.SetCacheUrl(elmt_conc, link_res)
-				// link_res = caching.GetCacheUrl(elmt_conc)
+				// link_res = scraper.ScrapWeb(elmt_conc)
+				// caching.SetCacheUrl(elmt_conc, link_res)
+				link_res = caching.GetCacheUrl(elmt_conc)
 			} else {
 				link_res = scraper.ScrapWeb(elmt_conc)
 				caching.SetCacheUrl(elmt_conc, link_res)
 			}
+
+			fmt.Println(link_res)
 
 			for _, elmt2 := range link_res {
 				mutex.Lock()
