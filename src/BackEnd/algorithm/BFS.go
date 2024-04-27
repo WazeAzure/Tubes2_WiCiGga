@@ -152,6 +152,7 @@ func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, 
 	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
 	stop := make(chan struct{})
+	terminate := false
 	var once sync.Once
 
 	for _, elmt := range current_url_list {
@@ -199,6 +200,7 @@ func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, 
 						// stop right here
 						once.Do(func() {
 							close(stop)
+							terminate = true
 							fmt.Println(elmt2, "RESULT===============================================")
 						})
 					}
@@ -211,8 +213,7 @@ func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, 
 			}
 		}(elmt)
 		fmt.Println(elmt)
-		select {
-		case <-stop:
+		if terminate {
 			break
 		}
 	}
