@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/algorithm"
+	"backend/caching"
 	"backend/scraper"
 	"backend/util"
 	"fmt"
@@ -16,6 +17,7 @@ type pathJSON struct {
 	PageStart string `json:"page_start"`
 	PageEnd   string `json:"page_end"`
 	Method    string `json:"method"`
+	Type      string `json:"type"`
 }
 
 /*
@@ -24,21 +26,25 @@ type pathJSON struct {
 +------------------------------------------+
 */
 
-// func main() {
-// 	router := gin.Default()
-
-// 	router.Use(cors.Default())
-
-// 	// Define API endpoints
-// 	router.POST("/api", getPath)
-
-// 	// Start the server
-// 	router.Run(":4000")
-// }
-
 func main() {
-	page1 := scraper.SendApi("Jokowi")
-	page2 := scraper.SendApi("Central Java")
+	// initialize cache
+	caching.CheckCacheFolder()
+	caching.InitCache()
+
+	/* SERVER PART */
+	// router := gin.Default()
+
+	// router.Use(cors.Default())
+
+	// // Define API endpoints
+	// router.POST("/api", getPath)
+
+	// // Start the server
+	// router.Run(":4000")
+
+	/* TESTING PART */
+	page1 := scraper.SendApi("Chicken")
+	page2 := scraper.SendApi("Duck Duck Go")
 
 	// 	// get initial value
 	// 	fmt.Println(PrettyPrint(page1))
@@ -46,17 +52,17 @@ func main() {
 
 	// 	// start scraping
 	// 	// max_depth := 3
-	hasil := algorithm.BFShandler(page1.Url, page2.Url)
+	// hasil := algorithm.BFShandler(page1.Url, page2.Url)
 	// hasil2 := bfsHandler(page1.Url, page2.Url)
 	// 	// fmt.Println(hasil.Message)
 	// 	// fmt.Println(hasil.Status)
-	fmt.Println(hasil.Time)
+	// fmt.Println(hasil.Time)
 
 	// 	// fmt.Println(hasil.Nodes)
 	// 	// fmt.Println(hasil.Edges)
 
-	// x := IDShandler(page1.Url, page2.Url)
-	// fmt.Println(x.Time)
+	x := algorithm.IDShandler(page1.Url, page2.Url, "single")
+	fmt.Println(x.Time)
 }
 
 /*
@@ -67,6 +73,10 @@ func main() {
 
 // Handler for GET /api
 func getPath(c *gin.Context) {
+
+	// clean global var
+	algorithm.IDSReset()
+	algorithm.BFSReset()
 
 	var requestData pathJSON
 
@@ -93,10 +103,9 @@ func getPath(c *gin.Context) {
 
 	fmt.Print(requestData.Method)
 	if requestData.Method == "BFS" {
-		resp = *algorithm.BFShandler(page1.Url, page2.Url)
+		resp = *algorithm.BFShandler(page1.Url, page2.Url, requestData.Type)
 	} else if requestData.Method == "IDS" {
-		fmt.Print("OIT INI DARI IDS")
-		resp = *algorithm.IDShandler(page1.Url, page2.Url)
+		resp = *algorithm.IDShandler(page1.Url, page2.Url, requestData.Type)
 	}
 
 	c.JSON(http.StatusOK, resp)

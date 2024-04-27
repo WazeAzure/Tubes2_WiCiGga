@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"backend/caching"
 	"backend/util"
 	"bytes"
 	"encoding/json"
@@ -12,8 +13,16 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html"
 )
+
+// var (
+// 	wg    sync.WaitGroup
+// 	mutex sync.Mutex
+// )
+
+var semaphore_scraping = make(chan struct{}, 10)
 
 func formatParams(params map[string]string) string {
 	queryString := "?"
@@ -92,41 +101,53 @@ func SendApi(search string) util.Page {
 }
 
 func ExtractTitle(n *html.Node) string {
-	if n.Type == html.ElementNode && n.Data == "title" {
-		// If the node is a <title> element, return its text content
-		str := strings.TrimSpace(textContent(n))
-		// fmt.Println("TITLE FOUND ================ ", str[6:len(str)-12])
+	// look until HEAD done. dont go to <body>
+	// if n.Type == html.ElementNode && n.Data == "body" {
+	// 	return ""
+	// }
 
-		// if len(str)-12 <= 3 {
-		// 	fmt.Println("=========================================")
-		// 	fmt.Println("|              ", str, "                  |")
-		// 	fmt.Println("=========================================")
-		// }
-		return str[:len(str)-12]
-	}
+	// if n.Type == html.ElementNode && n.Data == "title" {
+	// If the node is a <title> element, return its text content
+	// str := strings.TrimSpace(textContent(n))
+	// fmt.Println("TITLE FOUND ================ ", str[6:len(str)-12])
+
+	// if len(str)-12 <= 3 {
+	// 	fmt.Println("=========================================")
+	// 	fmt.Println("|              ", str, "                  |")
+	// 	fmt.Println("=========================================")
+	// }
+	// return str[:len(str)-12]
+	// }
 
 	// Recursively search for <title> element in child nodes
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		title := ExtractTitle(c)
-		if title != "" {
-			return title
-		}
-	}
-	return ""
+	// for c := n.FirstChild; c != nil; c = c.NextSibling {
+	// 	title := ExtractTitle(c)
+	// 	if title != "" {
+	// 		return title
+	// 	}
+	// }
+
+	doc := goquery.NewDocumentFromNode(n)
+	title := doc.Find("title").Text()
+	title = strings.TrimSpace(title)
+	return title[:len(title)-12]
 }
 
-func textContent(n *html.Node) string {
-	var text string
-	if n.Type == html.TextNode {
-		text = n.Data
-	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		text += textContent(c)
-	}
-	return text
-}
+// func textContent(n *html.Node) string {
+// 	var text string
+// 	if n.Type == html.TextNode {
+// 		text = n.Data
+// 	}
+// 	for c := n.FirstChild; c != nil; c = c.NextSibling {
+// 		text += textContent(c)
+// 	}
+// 	return text
+// }
 
 func handleRedirect(url string) string {
+
+	// defer func() { <-semaphore_scraping }()
+	fmt.Println("CALLED ", url, " ==================")
 	webUrl := "https://en.wikipedia.org"
 	resp, err := http.Get(webUrl + url)
 	if err != nil {
@@ -167,44 +188,145 @@ func customFilterURL(url string) bool {
 
 // Function to extract links from a node
 func ExtractLinks(n *html.Node, links *[]string, wg *sync.WaitGroup) {
-	if n.Type == html.ElementNode && n.Data == "a" {
-		url := ""
-		isTrue := false
-		for _, attr := range n.Attr {
-			if attr.Key == "href" {
-				if customFilterURL(attr.Val) {
-					url = attr.Val
-					isTrue = true
-					break
-				}
-			}
-		}
-		if isTrue {
-			for _, attr := range n.Attr {
-				if attr.Key == "class" {
-					if attr.Val == "mw-redirect" {
-						url = handleRedirect(url)
-						break
+	// stack := []*html.Node{}
+
+	// var stackNotEmpty int32
+
+	// // Atomic operations to set and check the stackNotEmpty flag
+	// setStackNotEmpty := func() { atomic.StoreInt32(&stackNotEmpty, 1) }
+	// isStackNotEmpty := func() bool { return atomic.LoadInt32(&stackNotEmpty) == 1 }
+
+	// push := func(node *html.Node) {
+	// 	mutex.Lock()
+	// 	defer mutex.Unlock()
+	// 	stack = append(stack, node)
+	// 	setStackNotEmpty()
+	// }
+
+	// pop := func() (node *html.Node) {
+	// 	mutex.Lock()
+	// 	defer mutex.Unlock()
+	// 	if len(stack) == 0 {
+	// 		return nil
+	// 	}
+	// 	node = stack[len(stack)-1]
+	// 	stack = stack[:len(stack)-1]
+	// 	if len(stack) == 0 {
+	// 		atomic.StoreInt32(&stackNotEmpty, 0)
+	// 	}
+	// 	return node
+	// }
+
+	// processNode := func(current_node *html.Node) {
+	// 	// fmt.Println("CALLED PROCESS NODE")
+	// 	var temp_link []string
+
+	// 	if current_node.Type == html.ElementNode && current_node.Data == "a" {
+	// 		url := ""
+	// 		isTrue := false
+	// 		for _, attr := range current_node.Attr {
+	// 			if attr.Key == "href" {
+	// 				if customFilterURL(attr.Val) {
+	// 					url = attr.Val
+	// 					isTrue = true
+	// 					break
+	// 				}
+	// 			}
+	// 		}
+	// 		if isTrue {
+	// 			for _, attr := range current_node.Attr {
+	// 				if attr.Key == "class" {
+	// 					if attr.Val == "mw-redirect" {
+
+	// 						semaphore_scraping <- struct{}{}
+
+	// 						if caching.CheckCacheRedirect(url) {
+	// 							url = caching.GetCacheRedirect(url)
+	// 						} else {
+	// 							url2 := url
+	// 							url = handleRedirect(url)
+	// 							caching.SetCacheRedirect(url2, url)
+	// 						}
+	// 						break
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		if url != "" {
+	// 			temp_link = append(temp_link, "https://en.wikipedia.org"+url)
+	// 		}
+	// 	}
+
+	// 	// add child node to stack
+	// 	for c := current_node.FirstChild; c != nil; c = c.NextSibling {
+	// 		// fmt.Println("called for loop ========")
+	// 		push(c)
+	// 	}
+
+	// 	// update *link
+	// 	mutex.Lock()
+	// 	defer mutex.Unlock()
+	// 	*links = append(*links, temp_link...)
+	// 	defer wg.Done()
+	// }
+
+	// push(n)
+
+	// for {
+	// 	if !isStackNotEmpty() {
+	// 		break
+	// 	}
+
+	// 	semaphore_scraping <- struct{}{}
+
+	// 	node := pop()
+
+	// 	if node == nil {
+	// 		<-semaphore_scraping
+	// 		continue
+	// 	}
+
+	// 	wg.Add(1)
+	// 	go func(node *html.Node) {
+	// 		defer func() { <-semaphore_scraping }()
+	// 		processNode(node)
+	// 	}(node)
+
+	// 	time.Sleep(50 * time.Millisecond)
+	// }
+
+	// wg.Wait()
+
+	doc := goquery.NewDocumentFromNode(n)
+	doc.Find("a").Each(func(i int, s *goquery.Selection) {
+		// wg.Add(1)
+		// go func() {
+		// 	defer wg.Done()
+		href, exist := s.Attr("href")
+		if exist {
+			if customFilterURL(href) {
+				url := href
+				class, exist2 := s.Attr("class")
+				if exist2 {
+					if class == "mw-redirect" {
+						if caching.CheckCacheRedirect(url) {
+							url = caching.GetCacheRedirect(url)
+						} else {
+							// semaphore_scraping <- struct{}{}
+							url2 := url
+							url = handleRedirect(url)
+							caching.SetCacheRedirect(url2, url)
+						}
 					}
 				}
+
+				*links = append(*links, "https://en.wikipedia.org"+url)
 			}
 		}
-		if url != "" {
-			*links = append(*links, "https://en.wikipedia.org"+url)
-		}
-	}
+		// }()
+	})
 
-	semaphore := make(chan struct{}, 3)
-	// Recursively extract links from child nodes
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		semaphore <- struct{}{}
-		wg.Add(1)
-		go func(c_conc *html.Node) {
-			defer func() { <-semaphore }()
-			defer wg.Done()
-			ExtractLinks(c_conc, links, wg)
-		}(c)
-	}
+	wg.Wait()
 }
 
 func findLinksInContent(n *html.Node) []string {
@@ -219,13 +341,11 @@ func findLinksInContent(n *html.Node) []string {
 					var wait sync.WaitGroup
 					// If found node with class "content", extract links
 					// semaphore <- struct{}{}
-					// wg.Add(1)
 					// go func() {
 					// defer func() { <-semaphore }()
 					// defer wg.Done()
 					ExtractLinks(n, &links, &wait)
 					// }()
-					wait.Wait()
 					return
 				}
 			}
