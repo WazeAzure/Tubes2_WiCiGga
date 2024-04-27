@@ -27,7 +27,7 @@ type pathJSON struct {
 */
 
 func main() {
-	// initialize cache
+	// initialize cache - PASTIKAN SELALU DIPANGGIL
 	caching.CheckCacheFolder()
 	caching.InitCache()
 
