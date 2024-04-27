@@ -52,15 +52,16 @@ func BFShandler(url string, end string, ans_type string) *util.ResponseAPI {
 
 	if ans_type == "multi" {
 		x = BFS(&semaphore, current_url, end, &resp, &n)
+		time.Sleep(1 * time.Second)
 	} else if ans_type == "single" {
 		// wg.Add(1)
-		x = BFSSingle(&semaphore, current_url, end, &resp, &n)
+		BFSSingle(&semaphore, current_url, end, &resp, &n)
+		x = true
 	}
 
 	util.TimeTrack(time_start, "scrapWeb", &resp.Time)
 	fmt.Println("degree dari path bernilai := ", n+1, x)
 
-	time.Sleep(1 * time.Second)
 	// path cleaning
 	if x {
 		var parent_child_bfs_temp = make(map[string]map[string]bool)
@@ -149,13 +150,13 @@ func BFS(semaphore *chan struct{}, current_url_list []string, end string, resp *
 	return BFS(semaphore, temp_url_list, end, resp, depth)
 }
 
-func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int) bool {
+func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int) {
 	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
 	terminate := make(chan struct{})
-	stop := false
+	// stop := false
 	var once sync.Once
-
+free:
 	for _, elmt := range current_url_list {
 		wg.Add(1)
 		*semaphore <- struct{}{}
@@ -165,50 +166,75 @@ func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, 
 			defer wg.Done()
 
 			var link_res []string
+
 			if caching.CheckCacheFile(elmt_conc) {
 				link_res = caching.GetCacheUrl(elmt_conc)
 			} else {
 				link_res = scraper.ScrapWeb(elmt_conc)
 				caching.SetCacheUrl(elmt_conc, link_res)
 			}
-		free:
-			for _, elmt2 := range link_res {
-				select {
-				case <-terminate:
-					once.Do(func() {
-						stop = true
-					})
-					break free
-				default:
-					mutex.Lock()
-					_, err := visited_bfs[elmt2]
-					mutex.Unlock()
-					if !err {
-						// not exist
-						if elmt2 == end {
-							// stop right here
-							close(terminate)
-							fmt.Println(elmt2)
-						}
-						mutex.Lock()
-						visited_bfs[elmt2] = true
-						mutex.Unlock()
-						temp_url_list = append(temp_url_list, elmt2)
-					}
 
+			// free:
+			for _, elmt2 := range link_res {
+				// select {
+				// case <-terminate:
+				// 	once.Do(func() {
+				// 		stop = true
+				// 	})
+				// 	break free
+				// default:
+				mutex.Lock()
+				_, err1 := parent_child_bfs[elmt2]
+				mutex.Unlock()
+				if !err1 {
+					mutex.Lock()
+					parent_child_bfs[elmt2] = make(map[string]bool)
+					parent_child_bfs[elmt2][elmt_conc] = true
+					mutex.Unlock()
+				} else {
+					mutex.Lock()
+					parent_child_bfs[elmt2][elmt_conc] = true
+					mutex.Unlock()
 				}
+
+				mutex.Lock()
+				_, err := visited_bfs[elmt2]
+				mutex.Unlock()
+				if !err {
+					// not exist
+					if elmt2 == end {
+						// stop right here
+						fmt.Println(elmt_conc, " ======================= PARENT ===========")
+						once.Do(func() {
+							// stop = true
+							close(terminate)
+						})
+
+					}
+					mutex.Lock()
+					visited_bfs[elmt2] = true
+					mutex.Unlock()
+					temp_url_list = append(temp_url_list, elmt2)
+				}
+
 			}
+			// }
 		}(elmt)
-		if stop {
-			break
-		}
 		fmt.Println(elmt)
+		select {
+		case <-terminate:
+			break free
+		default:
+		}
 	}
 
 	wg.Wait()
-	if stop {
-		return stop
+	select {
+	case <-terminate:
+		return
+	default:
 	}
+
 	*depth = *depth + 1
-	return BFS(semaphore, temp_url_list, end, resp, depth)
+	BFSSingle(semaphore, temp_url_list, end, resp, depth)
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,19 +33,19 @@ func main() {
 	caching.InitCache()
 
 	/* SERVER PART */
-	// router := gin.Default()
+	router := gin.Default()
 
-	// router.Use(cors.Default())
+	router.Use(cors.Default())
 
 	// Define API endpoints
-	// router.POST("/api", getPath)
+	router.POST("/api", getPath)
 
 	// Start the server
-	// router.Run(":4000")
+	router.Run(":4000")
 
 	/* TESTING PART */
-	page1 := scraper.SendApi("Jokowi")
-	page2 := scraper.SendApi("Central Java")
+	// page1 := scraper.SendApi("Jokowi")
+	// page2 := scraper.SendApi("Central Java")
 
 	// 	// get initial value
 	// 	fmt.Println(PrettyPrint(page1))
@@ -52,11 +53,11 @@ func main() {
 
 	// 	// start scraping
 	// 	// max_depth := 3
-	hasil := algorithm.BFShandler(page1.Url, page2.Url, "single")
+	// hasil := algorithm.BFShandler(page1.Url, page2.Url, "single")
 	// hasil2 := bfsHandler(page1.Url, page2.Url)
 	// 	// fmt.Println(hasil.Message)
 	// 	// fmt.Println(hasil.Status)
-	fmt.Println(hasil.Time)
+	// fmt.Println(hasil.Time)
 
 	// 	// fmt.Println(hasil.Nodes)
 	// 	// fmt.Println(hasil.Edges)

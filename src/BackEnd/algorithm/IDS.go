@@ -134,27 +134,13 @@ func IDSSingle(start string, end string, resp *util.ResponseAPI) [][]string {
 
 	// var semaphore = make(chan struct{}, 10)
 
-	var wait sync.WaitGroup
 	var i int = 0
-	stop := make(chan bool)
-	semaphore := make(chan struct{}, 10)
 	for !isFound {
-		wait.Add(1)
-		semaphore <- struct{}{}
-		go func(depth int) {
-			defer func() { <-semaphore }()
-			select {
-			case <-stop:
-				break
-			default:
-				if DLSSingle(start, end, depth, saved_path, &multipath, &wait) {
-					stop <- true
-				}
-			}
-		}(i)
+		if DLSSingle(start, end, i, saved_path, &multipath) {
+			isFound = true
+		}
 		i++
 	}
-	wait.Wait()
 
 	resp.Status = isFound
 	multipath = append(multipath, saved_path)
@@ -170,9 +156,8 @@ func IDSSingle(start string, end string, resp *util.ResponseAPI) [][]string {
 	}
 }
 
-func DLSSingle(start string, end string, maxdepth int, saved_path []string, ans *[][]string, wg *sync.WaitGroup) bool {
+func DLSSingle(start string, end string, maxdepth int, saved_path []string, ans *[][]string) bool {
 	if start == end {
-		fmt.Println("\n\n\nFOUND\n\n\n")
 		*ans = append(*ans, saved_path)
 		// for _, elmt := range saved_path {
 		// 	fmt.Println(elmt)
@@ -221,33 +206,24 @@ func DLSSingle(start string, end string, maxdepth int, saved_path []string, ans 
 		}
 	}
 
-	stop := false
-	semaphore := make(chan struct{}, 3)
 	for key := range url_list {
-		semaphore <- struct{}{}
+
 		saved_path2 := append(saved_path, key)
 		fmt.Println(key, maxdepth)
-		(*wg).Add(1)
-		go func(key_conc string) {
-			defer func() { <-semaphore }()
-			defer (*wg).Done()
-			x := DLS(key_conc, end, maxdepth-1, saved_path2, ans, wg)
-			if x {
-				stop = true
-			}
-		}(key)
+		if DLSSingle(key, end, maxdepth-1, saved_path2, ans) {
+			return true
+		}
 	}
 
 	// wg.Wait()
 
-	return stop
+	return false
 }
 
 func IDSReset() {
 	for k := range visited_node {
 		delete(visited_node, k)
 	}
-
 }
 
 func IDShandler(start string, end string, ans_type string) *util.ResponseAPI {

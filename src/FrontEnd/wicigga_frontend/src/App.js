@@ -208,7 +208,7 @@ function App() {
           setEdges(data.edges);
           setNodes(data.nodes);
 
-          // console.log(data)
+          console.log(data)
 
         })
     } catch (err) {
@@ -247,7 +247,7 @@ function App() {
 
         <div className='search-left'>
           <div className='search-bar-container'>
-            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} onBlur={() => setSelected1(true)} onFocus={() => setSelected1(false)} />
+            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} onBlur={() => setSelected1(true)} />
               : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value1} onChange={onChange1} />}
           </div>
           <div className='dropdown-offset'>
@@ -275,7 +275,7 @@ function App() {
 
         <div className='search-right'>
           <div className='search-bar-container'>
-            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} onBlur={() => setSelected2(true)} onFocus={() => setSelected2(false)} />
+            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} onBlur={() => setSelected2(true)} />
               : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value2} onChange={onChange2} />}
           </div>
           <div className='dropdown-offset'>
