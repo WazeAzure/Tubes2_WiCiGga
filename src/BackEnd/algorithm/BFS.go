@@ -73,6 +73,8 @@ func BFShandler(url string, end string, ans_type string) *util.ResponseAPI {
 
 		var zombie [][]string
 		resp.Nodes, resp.Edges = util.ConvertToVisualizerHandler(url, end, parent_child_bfs_temp, n, zombie, "BFS")
+
+		resp.Status = true
 	}
 	return &resp
 }
@@ -148,82 +150,65 @@ func BFS(semaphore *chan struct{}, current_url_list []string, end string, resp *
 }
 
 func BFSSingle(semaphore *chan struct{}, current_url_list []string, end string, resp *util.ResponseAPI, depth *int) bool {
-	fmt.Println("Current Depth ----- ", *depth, " ----")
 	// semaphore := make(chan struct{}, bfs_slave)
 	var temp_url_list []string
-	stop := make(chan struct{})
-	terminate := false
+	terminate := make(chan struct{})
+	stop := false
 	var once sync.Once
 
 	for _, elmt := range current_url_list {
+		wg.Add(1)
 		*semaphore <- struct{}{}
-		// wg.Add(1)
 		// time.Sleep(50 * time.Millisecond)
 		go func(elmt_conc string) {
 			defer func() { <-*semaphore }()
-			// defer wg.Done()
+			defer wg.Done()
 
 			var link_res []string
 			if caching.CheckCacheFile(elmt_conc) {
-				// link_res = scraper.ScrapWeb(elmt_conc)
-				// caching.SetCacheUrl(elmt_conc, link_res)
 				link_res = caching.GetCacheUrl(elmt_conc)
 			} else {
 				link_res = scraper.ScrapWeb(elmt_conc)
 				caching.SetCacheUrl(elmt_conc, link_res)
 			}
-
-			fmt.Println(link_res)
-
+		free:
 			for _, elmt2 := range link_res {
-				mutex.Lock()
-				_, err1 := parent_child_bfs[elmt2]
-				mutex.Unlock()
-				if !err1 {
+				select {
+				case <-terminate:
+					once.Do(func() {
+						stop = true
+					})
+					break free
+				default:
 					mutex.Lock()
-					parent_child_bfs[elmt2] = make(map[string]bool)
-					parent_child_bfs[elmt2][elmt_conc] = true
+					_, err := visited_bfs[elmt2]
 					mutex.Unlock()
-				} else {
-					mutex.Lock()
-					parent_child_bfs[elmt2][elmt_conc] = true
-					mutex.Unlock()
-				}
-
-				mutex.Lock()
-				_, err := visited_bfs[elmt2]
-				mutex.Unlock()
-
-				if !err {
-					// not exist
-					if elmt2 == end {
-						// stop right here
-						once.Do(func() {
-							close(stop)
-							terminate = true
-							fmt.Println(elmt2, "RESULT===============================================")
-						})
+					if !err {
+						// not exist
+						if elmt2 == end {
+							// stop right here
+							close(terminate)
+							fmt.Println(elmt2)
+						}
+						mutex.Lock()
+						visited_bfs[elmt2] = true
+						mutex.Unlock()
+						temp_url_list = append(temp_url_list, elmt2)
 					}
-					mutex.Lock()
-					visited_bfs[elmt2] = true
-					mutex.Unlock()
-					temp_url_list = append(temp_url_list, elmt2)
-				}
 
+				}
 			}
 		}(elmt)
-		fmt.Println(elmt)
-		if terminate {
+		if stop {
 			break
 		}
+		fmt.Println(elmt)
 	}
 
-	select {
-	case <-stop:
-		return true
-	default:
-		*depth = *depth + 1
-		return BFS(semaphore, temp_url_list, end, resp, depth)
+	wg.Wait()
+	if stop {
+		return stop
 	}
-
+	*depth = *depth + 1
+	return BFS(semaphore, temp_url_list, end, resp, depth)
 }
