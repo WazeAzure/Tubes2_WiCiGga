@@ -16,10 +16,13 @@ function App() {
   const [value1, setValue1] = useState("");
   const [value2, setValue2] = useState("");
 
-  //Toggle button handler, false = BFS, true = IDS
+  //Toggle button handler, false = BFS, true = IDS, false = Multivalue, true = Singlevalue
   const [buttonState, setButtonState] = useState(false);
+  const [valueState, setValueState] = useState(false);
   const [selected1, setSelected1] = useState(false);
   const [selected2, setSelected2] = useState(false);
+
+
 
   //Data completion handler
   const [dataComplete, setDataComplete] = useState(false)
@@ -220,7 +223,8 @@ function App() {
     const dataToSend = {
       start: value1,
       end: value2,
-      method: buttonState ? 'IDS' : 'BFS'
+      method: buttonState ? 'IDS' : 'BFS',
+      type: valueState ? 'single' : 'multi'
     }
     if (dataComplete) {
 
@@ -295,6 +299,9 @@ function App() {
         </div>
       </div>
       <div className='box-1'>
+        <div className='box-2' onClick={() => setValueState(!valueState)}>
+          {valueState ? <p>Single-value</p> : <p>Multi-value</p>}
+        </div>
         <div className='button-mode' onClick={() => setButtonState(!buttonState)}>
           {buttonState ? <p>IDS</p> : <p>BFS</p>}
         </div>
