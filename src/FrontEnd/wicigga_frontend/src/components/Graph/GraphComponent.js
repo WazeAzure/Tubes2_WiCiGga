@@ -1,6 +1,7 @@
 import React from "react";
 import Graph from "react-graph-vis";
 import uuid from "react-uuid";
+import "./Graph.css"
 
 const GraphShow = ({ node_list, edge_list }) => {
     // console.log(node_list)
@@ -41,7 +42,7 @@ const GraphShow = ({ node_list, edge_list }) => {
     }
 
     return (
-        <div className="graph-container" style={{ backgroundColor: "#F7FFF7", border: "1px solid red" }}>
+        <div className="graph-container">
             <Graph
                 key={uuid()}
                 graph={graph}

@@ -82,7 +82,7 @@
 }
 
 .box-1 {
-  height: 400px;
+  height: 300px;
   width: 600px;
   display: flex;
   flex-direction: row;
@@ -189,4 +189,16 @@
 .box-2:hover {
   color: white;
   border-color: black;
+}
+
+.result-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: baseline;
+}
+
+.result-tag {
+  padding-left: 20px;
+  font-size: 18px;
+  font-weight: 800;
 }

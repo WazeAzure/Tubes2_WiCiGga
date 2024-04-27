@@ -316,24 +316,17 @@ function App() {
       </div>
 
       {/* SHOW RESULT */}
-      <div>
+      <div className='result-section'>
         {/* {pathFound? <p>{message}</p>:<p>Path NOT Founded</p>} */}
-        {
-          pathFound &&
-          <>
-            <p>{message}</p>
-          </>
-        }
-        {
-          !pathFound &&
-          <p>Path NOT Founded</p>
-        }
-        <p>execution time {duration}</p>
-        <p>answer degree {degree}</p>
-        <p>article hit {articleHit}</p>
+        {pathFound ? <>
+          <p className='result-tag'>execution time : {duration / 1000000000}s</p>
+          <p className='result-tag'>answer degree : {degree}</p>
+          <p className='result-tag'>article hit : {articleHit} article(s)</p>
+        </> : <><p className='result-tag' >Path NOT Found</p></>}
+        {/* VISUALIZE RESULT IN GRAPH */}
+        <GraphShow node_list={nodes} edge_list={edges} />
+        <br></br>
       </div>
-      {/* VISUALIZE RESULT IN GRAPH */}
-      <GraphShow node_list={nodes} edge_list={edges} />
     </div>
   );
 }
