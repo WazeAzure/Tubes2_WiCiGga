@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"log"
 	"time"
 )
@@ -77,8 +76,8 @@ func ConvertToVisualizer(id *int, depth int, temp_nodes *[]Node, temp_edges *[]E
 		return false
 	}
 
-	fmt.Println("current url: ", url)
-	fmt.Println("current depth: ", depth)
+	// fmt.Println("current url: ", url)
+	// fmt.Println("current depth: ", depth)
 
 	_, err := temp_visited[url]
 	if !err {
@@ -107,14 +106,14 @@ func ConvertToVisualizer(id *int, depth int, temp_nodes *[]Node, temp_edges *[]E
 			*temp_edges = append(*temp_edges, Edge{From: from_int, To: to_int})
 			penentu = true
 		}
-		if key == start && x {
-			fmt.Println("===================== EDGE TO JOKOWI CREATED +++++++++++++++++")
-			fmt.Println(key)
-			var from_int int = temp_visited[key]
-			var to_int int = temp_visited[url]
-			fmt.Println(key, " -> ", url)
-			fmt.Println(from_int, " -> ", to_int)
-		}
+		// if key == start && x {
+		// fmt.Println("===================== EDGE TO JOKOWI CREATED +++++++++++++++++")
+		// fmt.Println(key)
+		// var from_int int = temp_visited[key]
+		// var to_int int = temp_visited[url]
+		// fmt.Println(key, " -> ", url)
+		// fmt.Println(from_int, " -> ", to_int)
+		// }
 	}
 
 	return penentu
@@ -163,8 +162,6 @@ func ConvertToVisualizerHandler(start string, end string, temp map[string]map[st
 		id++
 		ConvertToVisualizerIDS(&id, &temp_nodes, &temp_edges, temp_visited, ids_data, start)
 	}
-
-	fmt.Println(temp_nodes)
 
 	return temp_nodes, temp_edges
 }

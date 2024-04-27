@@ -65,9 +65,6 @@ func BFShandler(url string, end string, ans_type string) *util.ResponseAPI {
 		var parent_child_bfs_temp = make(map[string]map[string]bool)
 
 		for key, val := range parent_child_bfs {
-			if key == end {
-				fmt.Println(key, " | ", val)
-			}
 			if len(val) > 0 {
 				parent_child_bfs_temp[key] = val
 			}

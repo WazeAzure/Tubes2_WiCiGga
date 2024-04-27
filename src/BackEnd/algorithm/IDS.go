@@ -252,6 +252,7 @@ func IDSReset() {
 
 func IDShandler(start string, end string, ans_type string) *util.ResponseAPI {
 	var resp util.ResponseAPI
+	fmt.Println(ans_type)
 
 	var multipath [][]string
 	if ans_type == "multi" {
@@ -260,7 +261,7 @@ func IDShandler(start string, end string, ans_type string) *util.ResponseAPI {
 		// for i := range multipath {
 		// 	fmt.Println(multipath[i])
 		// }
-	} else {
+	} else if ans_type == "single" {
 		multipath = IDSSingle(start, end, &resp)
 	}
 	var temp = make(map[string]map[string]bool)

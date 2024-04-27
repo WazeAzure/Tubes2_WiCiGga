@@ -185,6 +185,7 @@ function App() {
   const sendData = async (dataToSend) => {
     // console.log(value1 === '')
     // console.log(value2 === '')
+    console.log(dataToSend)
     try {
       fetch('http://localhost:4000/api', {
         method: 'POST',

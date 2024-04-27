@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,19 +33,19 @@ func main() {
 	caching.InitCache()
 
 	/* SERVER PART */
-	// router := gin.Default()
+	router := gin.Default()
 
-	// router.Use(cors.Default())
+	router.Use(cors.Default())
 
-	// // Define API endpoints
-	// router.POST("/api", getPath)
+	// Define API endpoints
+	router.POST("/api", getPath)
 
-	// // Start the server
-	// router.Run(":4000")
+	// Start the server
+	router.Run(":4000")
 
 	/* TESTING PART */
-	page1 := scraper.SendApi("Chicken")
-	page2 := scraper.SendApi("Duck Duck Go")
+	// page1 := scraper.SendApi("Chicken")
+	// page2 := scraper.SendApi("Duck Duck Go")
 
 	// 	// get initial value
 	// 	fmt.Println(PrettyPrint(page1))
@@ -61,8 +62,8 @@ func main() {
 	// 	// fmt.Println(hasil.Nodes)
 	// 	// fmt.Println(hasil.Edges)
 
-	x := algorithm.IDShandler(page1.Url, page2.Url, "single")
-	fmt.Println(x.Time)
+	// x := algorithm.IDShandler(page1.Url, page2.Url, "single")
+	// fmt.Println(x.Time)
 }
 
 /*
@@ -101,7 +102,7 @@ func getPath(c *gin.Context) {
 	// clean input
 	var resp util.ResponseAPI
 
-	fmt.Print(requestData.Method)
+	fmt.Println(requestData.Method)
 	if requestData.Method == "BFS" {
 		resp = *algorithm.BFShandler(page1.Url, page2.Url, requestData.Type)
 	} else if requestData.Method == "IDS" {
