@@ -6,11 +6,16 @@ import (
 	"hash/fnv"
 	"log"
 	"os"
+	"sync"
 
 	"git.mills.io/prologic/bitcask"
 )
 
 var CachedRootFolder string = ".cache/"
+
+var (
+	mutex sync.Mutex
+)
 
 func CheckCacheFolder() {
 	if _, err := os.Stat(".cache"); errors.Is(err, os.ErrNotExist) {
@@ -33,12 +38,15 @@ func CheckCacheFile(url string) bool {
 func CheckCacheRedirect(url string) bool {
 	key := GetKeyHash(url)
 
+	mutex.Lock()
 	CachedRedirect, err := bitcask.Open(CachedRootFolder + "#cached-redirect")
 	if err != nil {
 		log.Fatalln(err)
 	}
+	x := CachedRedirect.Has([]byte(key))
 
-	return CachedRedirect.Has([]byte(key))
+	mutex.Unlock()
+	return x
 }
 
 func GetKeyHash(url string) string {
@@ -66,6 +74,7 @@ func InitCache() {
 }
 
 func SetCacheVisited(currenct_url string) {
+	mutex.Lock()
 	CachedWebpage, err := bitcask.Open(CachedRootFolder + "#cached-webpage")
 	if err != nil {
 		log.Fatalln(err)
@@ -73,12 +82,15 @@ func SetCacheVisited(currenct_url string) {
 
 	key := GetKeyHash(currenct_url)
 	if CachedWebpage.Has([]byte(key)) {
+		CachedWebpage.Close()
+		mutex.Unlock()
 		return
 	}
 
 	CachedWebpage.Put([]byte(key), []byte(currenct_url))
 
 	CachedWebpage.Close()
+	mutex.Unlock()
 }
 
 func SetCacheUrl(current_url string, list_url []string) {
