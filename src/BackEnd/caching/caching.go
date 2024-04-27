@@ -10,9 +10,6 @@ import (
 	"git.mills.io/prologic/bitcask"
 )
 
-var CachedWebpage *bitcask.Bitcask
-var CachedRedirect *bitcask.Bitcask
-
 var CachedRootFolder string = ".cache/"
 
 func CheckCacheFolder() {
@@ -36,6 +33,11 @@ func CheckCacheFile(url string) bool {
 func CheckCacheRedirect(url string) bool {
 	key := GetKeyHash(url)
 
+	CachedRedirect, err := bitcask.Open(CachedRootFolder + "#cached-redirect")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	return CachedRedirect.Has([]byte(key))
 }
 
@@ -47,26 +49,36 @@ func GetKeyHash(url string) string {
 
 func InitCache() {
 	var err error
-	CachedWebpage, err = bitcask.Open(CachedRootFolder + "#cached-webpage")
+	CachedWebpage, err := bitcask.Open(CachedRootFolder + "#cached-webpage")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	CachedRedirect, err = bitcask.Open(CachedRootFolder + "#cached-redirect")
+	CachedRedirect, err := bitcask.Open(CachedRootFolder + "#cached-redirect")
 	if err != nil {
 		log.Fatalln(err)
 	}
 	_ = CachedWebpage
 	_ = CachedRedirect
+
+	CachedRedirect.Close()
+	CachedWebpage.Close()
 }
 
 func SetCacheVisited(currenct_url string) {
+	CachedWebpage, err := bitcask.Open(CachedRootFolder + "#cached-webpage")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	key := GetKeyHash(currenct_url)
 	if CachedWebpage.Has([]byte(key)) {
 		return
 	}
 
 	CachedWebpage.Put([]byte(key), []byte(currenct_url))
+
+	CachedWebpage.Close()
 }
 
 func SetCacheUrl(current_url string, list_url []string) {
@@ -93,9 +105,16 @@ func SetCacheUrl(current_url string, list_url []string) {
 func SetCacheRedirect(current_url string, redirect_url string) {
 	key := GetKeyHash(current_url)
 
+	CachedRedirect, err := bitcask.Open(CachedRootFolder + "#cached-redirect")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	if !CachedRedirect.Has([]byte(key)) {
 		CachedRedirect.Put([]byte(key), []byte(redirect_url))
 	}
+
+	CachedRedirect.Close()
 }
 
 func GetCacheUrl(current_url string) []string {
@@ -124,15 +143,30 @@ func GetCacheUrl(current_url string) []string {
 func GetCacheRedirect(current_url string) string {
 	key := GetKeyHash(current_url)
 
+	CachedRedirect, err := bitcask.Open(CachedRootFolder + "#cached-redirect")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	ans, err := CachedRedirect.Get([]byte(key))
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	CachedRedirect.Close()
+
 	return string(ans)
 }
 
 func DeleteCache(url string) {
 	key := GetKeyHash(url)
 
+	CachedWebpage, err := bitcask.Open(CachedRootFolder + "#cached-webpage")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	CachedWebpage.Delete([]byte(key))
+
+	CachedWebpage.Close()
 }
