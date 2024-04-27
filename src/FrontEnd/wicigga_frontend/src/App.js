@@ -130,15 +130,14 @@ function App() {
     }
   }, [data2]);
 
-  // Fetch data for image search thumbnail
-  // useEffect((id) => {
-  //   if (data1.length !== 0) {
-  //     fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&origin=*&pithumbsize=100&pageids=` + id)
-  //       .then((res) => {
-  //         return res.json();
-  //       }).then
-  //   }
-  // }, [])
+  // Handle onBLur
+  const handleClick = (event) => {
+    // Check if the clicked element is not the excluded one
+    if (!event.target.closest('#excludedElement')) {
+      setSelected1(true);
+      setSelected2(true);
+    }
+  }
 
 
   useEffect(() => {
@@ -237,7 +236,7 @@ function App() {
 
 
   return (
-    <div className="Head">
+    <div className="Head" onClick={handleClick}>
       <h1 className='title'>Wicigga</h1>
 
 
@@ -247,8 +246,8 @@ function App() {
 
         <div className='search-left'>
           <div className='search-bar-container'>
-            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value1} onChange={onChange1} onBlur={() => setSelected1(true)} />
-              : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value1} onChange={onChange1} />}
+            {!form1 ? <input type="text" placeholder='Type here to search..' className='search-bar' id="excludedElement" value={value1} onChange={onChange1} />
+              : <input type="text" placeholder='Please input form accordingly!' className='search-bar' id="excludedElement" value={value1} onChange={onChange1} />}
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data1.some(item => {
@@ -257,7 +256,7 @@ function App() {
             }) ? '' : '-dummy')}>
               {data1.slice(0, 5)
                 .map((item, index) => (
-                  <li key={index} className="search-result" onClick={() => { setValue1(item); setSelected1(true); }}>
+                  <li key={index} className="search-result" onClick={() => { setValue1(item.title); setSelected1(true); }}>
                     <div className='img-box'>
                       <div className='image-result'>
                         <img src={imageURLs1[index]} className='image'></img>
@@ -275,8 +274,8 @@ function App() {
 
         <div className='search-right'>
           <div className='search-bar-container'>
-            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' value={value2} onChange={onChange2} onBlur={() => setSelected2(true)} />
-              : <input type="text" placeholder='Please input form accordingly!' className='search-bar' value={value2} onChange={onChange2} />}
+            {!form2 ? <input type="text" placeholder='Type here to search..' className='search-bar' id="excludedElement" value={value2} onChange={onChange2} />
+              : <input type="text" placeholder='Please input form accordingly!' className='search-bar' id="excludedElement" value={value2} onChange={onChange2} />}
           </div>
           <div className='dropdown-offset'>
             <div className={'dropdown' + (data2.some(item => {
@@ -285,7 +284,7 @@ function App() {
             }) ? '' : '-dummy')}>
               {data2.slice(0, 5)
                 .map((item, index) => (
-                  <li key={index} className="search-result" onClick={() => { setValue2(item); setSelected2(true); }}>
+                  <li key={index} className="search-result" onClick={() => { setValue2(item.title); setSelected2(true); }}>
                     <div className='img-box'>
                       <div className='image-result'>
                         <img src={imageURLs2[index]} className='image'></img>
