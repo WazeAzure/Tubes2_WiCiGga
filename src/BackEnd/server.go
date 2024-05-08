@@ -44,8 +44,8 @@ func main() {
 	router.Run(":4000")
 
 	/* TESTING PART */
-	// page1 := scraper.SendApi("Jokowi")
-	// page2 := scraper.SendApi("Central Java")
+	// page1 := scraper.SendApi("Eremosyne")
+	// page2 := scraper.SendApi("British Birds Rarities Committee")
 
 	// 	// get initial value
 	// 	fmt.Println(PrettyPrint(page1))
@@ -56,13 +56,13 @@ func main() {
 	// hasil := algorithm.BFShandler(page1.Url, page2.Url, "single")
 	// hasil2 := bfsHandler(page1.Url, page2.Url)
 	// 	// fmt.Println(hasil.Message)
-	// 	// fmt.Println(hasil.Status)
+	// fmt.Println(hasil.Status)
 	// fmt.Println(hasil.Time)
 
 	// 	// fmt.Println(hasil.Nodes)
 	// 	// fmt.Println(hasil.Edges)
 
-	// x := algorithm.IDShandler(page1.Url, page2.Url, "single")
+	// x := algorithm.IDShandler(page1.Url, page2.Url, "multi")
 	// fmt.Println(x.Time)
 }
 

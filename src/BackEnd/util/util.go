@@ -13,6 +13,7 @@ type Node struct {
 	Level int    `json:"level"`
 	Label string `json:"label"`
 	Color string `json:"color"`
+	Group int    `json:"group"`
 }
 
 type Edge struct {
@@ -89,7 +90,7 @@ func ConvertToVisualizer(id *int, depth int, temp_nodes *[]Node, temp_edges *[]E
 
 		// create Node
 		// fmt.Println("========= NODE CREATED =========")
-		*temp_nodes = append(*temp_nodes, Node{Id: *id, Level: depth, Label: url[30:], Color: colorlist[depth]})
+		*temp_nodes = append(*temp_nodes, Node{Id: *id, Level: depth, Label: url[30:], Color: colorlist[depth], Group: depth})
 		*id++
 	}
 
@@ -156,10 +157,26 @@ func ConvertToVisualizerHandler(start string, end string, temp map[string]map[st
 	temp_visited[start] = id
 
 	if algorithm == "BFS" {
+		var temp_has_edges = make(map[int]bool)
+		var temp_has_nodes []Node
 
 		temp_nodes = append(temp_nodes, Node{Id: id, Level: maxdepth + 1, Label: start[30:], Color: colorlist[maxdepth+1]})
 		id++
 		ConvertToVisualizer(&id, 0, &temp_nodes, &temp_edges, temp_visited, temp, end, start, maxdepth)
+
+		for idx := range temp_edges {
+			temp_has_edges[temp_edges[idx].From] = true
+			temp_has_edges[temp_edges[idx].To] = true
+		}
+
+		for idx := range temp_nodes {
+			val := temp_has_edges[temp_nodes[idx].Id]
+			if val {
+				temp_has_nodes = append(temp_has_nodes, temp_nodes[idx])
+			}
+		}
+
+		temp_nodes = temp_has_nodes
 	} else if algorithm == "IDS" {
 		temp_nodes = append(temp_nodes, Node{Id: id, Level: 0, Label: start[30:], Color: colorlist[0]})
 		id++

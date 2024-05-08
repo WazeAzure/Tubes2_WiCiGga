@@ -44,6 +44,8 @@ function App() {
   const [degree, setDegree] = useState(0)
   // hit article
   const [articleHit, setArticleHit] = useState(0)
+  // group
+  const [group, setGroup] = useState(0)
 
   //Search input handler
   const onChange1 = (event) => {
@@ -212,6 +214,7 @@ function App() {
           setNodes(data.nodes);
           setArticleHit(data.hit);
           setDegree(data.degree);
+          setGroup(data.group)
 
           console.log(data)
 

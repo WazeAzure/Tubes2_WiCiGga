@@ -24,6 +24,7 @@ func CheckCacheFolder() {
 	if _, err := os.Stat(".cache"); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(".cache", os.ModePerm)
 		if err != nil {
+			log.Println("cache folder")
 			log.Println(err)
 		}
 	}
@@ -58,11 +59,13 @@ func InitCache() {
 	var err error
 	CachedWebpage, err = bitcask.Open(CachedRootFolder + "#cached-webpage")
 	if err != nil {
+		log.Println("cant open cachedwebpage from init cache")
 		log.Fatalln(err)
 	}
 
 	CachedRedirect, err = bitcask.Open(CachedRootFolder + "#cached-redirect")
 	if err != nil {
+		log.Println("cant open cachedredirect from init cache")
 		log.Fatalln(err)
 	}
 	_ = CachedWebpage
@@ -87,10 +90,12 @@ func SetCacheUrl(current_url string, list_url []string) {
 
 	// pastikan list url sudah bersih dan sudah di handle redirect sebelumnya!
 	key := GetKeyHash(current_url)
+	fmt.Println(key)
 	var err error
 	Db, err := bitcask.Open(CachedRootFolder + key)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(key, " ", current_url, "cant open setcacheurl from init cache")
+		log.Panic(err)
 	}
 
 	for val := range list_url {
@@ -127,7 +132,8 @@ func GetCacheUrl(current_url string) []string {
 	var err error
 	Db, err := bitcask.Open(CachedRootFolder + key)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(key, " ", current_url, "cant open db from init cache")
+		log.Panic(err)
 	}
 
 	x := Db.Keys()
@@ -148,6 +154,7 @@ func GetCacheRedirect(current_url string) string {
 	ans, err := CachedRedirect.Get([]byte(key))
 	mutex.Unlock()
 	if err != nil {
+		log.Println(key, " ", current_url, "cant open getcacheurl from init cache")
 		log.Fatalln(err)
 	}
 

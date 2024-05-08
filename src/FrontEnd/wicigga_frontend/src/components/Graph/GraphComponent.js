@@ -21,7 +21,7 @@ const GraphShow = ({ node_list, edge_list }) => {
     }
 
     const options = {
-        autoResize: false,
+        autoResize: true,
         width: "750px",
         height: "500px",
         nodes: {
@@ -31,14 +31,26 @@ const GraphShow = ({ node_list, edge_list }) => {
             improvedLayout: false,
             hierarchical: {
                 enabled: true,
-                levelSeparation: 150,
-                nodeSpacing: 500,
-                treeSpacing: 200,
-            }
+                levelSeparation: 200, // Adjust the vertical separation between levels
+              },
         },
         physics: {
-            enabled: false
-        }
+            enabled: true,
+            repulsion: {
+              nodeDistance: 200, // Increase this value to reduce repulsion between nodes
+            },
+            hierarchicalRepulsion: {
+              centralGravity: 0, // Set central gravity to 0 to encourage nodes with the same level to be closer
+              springLength: 1, // Adjust the spring length between nodes
+              springConstant: 0.05, // Adjust the spring constant
+              nodeDistance: 200, // Adjust the node distance
+              damping: 0.9, // Adjust damping
+            },
+          },
+    }
+
+    const clustering = {
+        enabled: true
     }
 
     return (
@@ -48,6 +60,7 @@ const GraphShow = ({ node_list, edge_list }) => {
                 graph={graph}
                 options={options}
                 hierarchiallayout={hierarchiallayout}
+                clustering={clustering}
             />
         </div>
     )
